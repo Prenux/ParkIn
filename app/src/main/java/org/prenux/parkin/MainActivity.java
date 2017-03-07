@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        map.setMaxZoomLevel(19);
+        map.setMaxZoomLevel(21);
 
         //Set default view point
         IMapController mapController = map.getController();
