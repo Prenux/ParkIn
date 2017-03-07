@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -23,10 +22,11 @@ public class MainActivity extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
+        map.setMaxZoomLevel(19);
 
         //Set default view point
         IMapController mapController = map.getController();
-        mapController.setZoom(21);
+        mapController.setZoom(19);
         GeoPoint startPoint = new GeoPoint(45.500997, -73.615783);
         mapController.setCenter(startPoint);
 
