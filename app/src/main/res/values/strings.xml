@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ParkIn</string>
+    <string name="searchView_hint">Where are you going?</string>
 </resources>
