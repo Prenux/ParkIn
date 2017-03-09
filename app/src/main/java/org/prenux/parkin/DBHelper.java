@@ -44,7 +44,9 @@ class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    boolean insertExpense(int catId, String catStr, String whatStr, Float priceFlt, String datStr)
+    //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLE FOR NOW
+
+    /*boolean insertExpense(int catId, String catStr, String whatStr, Float priceFlt, String datStr)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -55,7 +57,7 @@ class DBHelper extends SQLiteOpenHelper {
         contentValues.put(SPENDING_COLUMN_DATE, datStr);
         db.insert(SPENDING_TABLE_NAME, null, contentValues);
         return true;
-    }
+    }*/
 
     public Cursor getData(int id){
         SQLiteDatabase db = this.getReadableDatabase();
