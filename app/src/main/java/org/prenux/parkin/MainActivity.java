@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         markerArrayList.add(pressedMarker);
         map.getOverlays().add(pressedMarker);
-        pressedMarker.setTitle("Here, really? \n" + p.getLatitude()+","+p.getLongitude());
+        pressedMarker.setTitle(p.getLatitude()+","+p.getLongitude());
         map.invalidate();
         return true;
     }

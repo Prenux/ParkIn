@@ -28,6 +28,10 @@ class DBHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME , null, 1);
     }
 
+
+    //Create table if it doesn't exist
+    //TODO CHANGE COLUMN NAMES and COLUMN NAMES VARIABLES7
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(
@@ -40,35 +44,19 @@ class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS SPENDING");
+        db.execSQL("DROP TABLE IF EXISTS "+ SPENDING_TABLE_NAME);
         onCreate(db);
     }
 
-    //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLE FOR NOW
 
-    /*boolean insertExpense(int catId, String catStr, String whatStr, Float priceFlt, String datStr)
-    {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(SPENDING_COLUMN_CATID, catId);
-        contentValues.put(SPENDING_COLUMN_CAT, catStr);
-        contentValues.put(SPENDING_COLUMN_WHAT, whatStr);
-        contentValues.put(SPENDING_COLUMN_PRICE, priceFlt);
-        contentValues.put(SPENDING_COLUMN_DATE, datStr);
-        db.insert(SPENDING_TABLE_NAME, null, contentValues);
-        return true;
-    }*/
-
-    public Cursor getData(int id){
+    //Get Data by SQL unique ID
+    public Cursor getDataByID(int id){
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery( "select * from spending where id="+id, null );
     }
 
-    Cursor getCatTot(int catId){
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("select * from spending where catId="+catId,null);
-    }
 
+    // Get number of rows in the table
     public int numberOfRows(){
         SQLiteDatabase db = this.getReadableDatabase();
         return (int) DatabaseUtils.queryNumEntries(db, SPENDING_TABLE_NAME);
@@ -92,7 +80,8 @@ class DBHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    public Integer deleteExpense (Integer id)
+    //Delete a row based on its unique ID
+    public Integer deleteRowbyID (Integer id)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("SPENDING",
@@ -100,26 +89,30 @@ class DBHelper extends SQLiteOpenHelper {
                 new String[] { Integer.toString(id) });
     }
 
+    //Delete the database
     void deleteDb(Context context){
         context.deleteDatabase(DATABASE_NAME);
     }
 
-    private ArrayList<String> getAllExpense()
+
+
+    //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLEs FOR NOW
+
+    /*boolean insertExpense(int catId, String catStr, String whatStr, Float priceFlt, String datStr)
     {
-        ArrayList<String> array_list = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(SPENDING_COLUMN_CATID, catId);
+        contentValues.put(SPENDING_COLUMN_CAT, catStr);
+        contentValues.put(SPENDING_COLUMN_WHAT, whatStr);
+        contentValues.put(SPENDING_COLUMN_PRICE, priceFlt);
+        contentValues.put(SPENDING_COLUMN_DATE, datStr);
+        db.insert(SPENDING_TABLE_NAME, null, contentValues);
+        return true;
+    }*/
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from SPENDING", null );
-        res.moveToFirst();
-
-        while(!res.isAfterLast()){
-            array_list.add(res.getString(res.getColumnIndex(SPENDING_COLUMN_WHAT)));
-            res.moveToNext();
-        }
-        res.close();
-        return array_list;
-    }
-
+    //Example of fetching all of a column data
+    /*
     private ArrayList<Float> getAllPrice()
     {
         ArrayList<Float> array_list = new ArrayList<>();
@@ -135,54 +128,15 @@ class DBHelper extends SQLiteOpenHelper {
         res.close();
         return array_list;
     }
+    */
 
-    private ArrayList<Integer> getAllId()
-    {
-        ArrayList<Integer> array_list = new ArrayList<>();
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from SPENDING", null );
-        res.moveToFirst();
 
-        while(!res.isAfterLast()){
-            array_list.add(res.getInt(res.getColumnIndex(SPENDING_COLUMN_ID)));
-            res.moveToNext();
-        }
-        res.close();
-        return array_list;
-    }
 
-    private ArrayList<String> getAllDate()
-    {
-        ArrayList<String> array_list = new ArrayList<>();
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from SPENDING", null );
-        res.moveToFirst();
+    // Example of raw SQL query
 
-        while(!res.isAfterLast()){
-            array_list.add(res.getString(res.getColumnIndex(SPENDING_COLUMN_DATE)));
-            res.moveToNext();
-        }
-        res.close();
-        return array_list;
-    }
-
-    ArrayList<String> getAllExpPrice(){
-        ArrayList<String> whatArr = getAllExpense();
-        ArrayList<Float> priceArr = getAllPrice();
-        ArrayList<Integer> idArr = getAllId();
-        ArrayList<String> datArr = getAllDate();
-        ArrayList<String> resArr = new ArrayList<>();
-
-        for(int i=0;i<whatArr.size();i++){
-            resArr.add(String.valueOf(idArr.get(i)) + ".  " + String.format("%s :         %s    at      %s",whatArr.get(i),String.valueOf(priceArr.get(i)), datArr.get(i)));
-        }
-        Collections.reverse(resArr);
-        return resArr;
-    }
-
-    double getTotal(){
+    /*double getTotal(){
 
         double tot = 0;
 
@@ -197,6 +151,7 @@ class DBHelper extends SQLiteOpenHelper {
         res.close();
         return tot;
 
-    }
+    }*/
+
 
 }
