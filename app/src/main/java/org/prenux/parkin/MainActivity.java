@@ -1,12 +1,16 @@
 package org.prenux.parkin;
 
 import android.content.Context;
+import android.location.Address;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.bonuspack.location.GeocoderNominatim;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -16,12 +20,15 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver{
 
     MapView map;
     private ArrayList<Marker> markerArrayList;
+    String userAgent = "org.prenux.parkin";
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         markerArrayList = new ArrayList<>();
 
+        //Initiate Map
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
@@ -92,5 +100,20 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             marker.remove(map);
         }
         markerArrayList.clear();
+    }
+
+    //Get address from a geolocalisation
+    public String getAddressFromGeoPoint(GeoPoint p){
+        String address;
+        GeocoderNominatim gc = new GeocoderNominatim(userAgent);
+        double latitude = p.getLatitude();
+        double longitude = p.getLongitude();
+        try {
+            List<Address> addresses = gc.getFromLocation(latitude, longitude, 1);
+            Log.i("ADDRESSES", ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return address;
     }
 }

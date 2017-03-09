@@ -30,7 +30,7 @@ class DBHelper extends SQLiteOpenHelper {
 
 
     //Create table if it doesn't exist
-    //TODO CHANGE COLUMN NAMES and COLUMN NAMES VARIABLES7
+    //TODO CHANGE COLUMN NAMES and COLUMN NAMES VARIABLES
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -96,7 +96,7 @@ class DBHelper extends SQLiteOpenHelper {
 
 
 
-    //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLEs FOR NOW
+    //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLES FOR NOW
 
     /*boolean insertExpense(int catId, String catStr, String whatStr, Float priceFlt, String datStr)
     {
