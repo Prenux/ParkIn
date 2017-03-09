@@ -15,7 +15,6 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
-import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.util.ArrayList;
 
@@ -71,18 +70,19 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public boolean singleTapConfirmedHelper(GeoPoint p) {
         Toast.makeText(this, "Tap on ("+p.getLatitude()+","+p.getLongitude()+")", Toast.LENGTH_SHORT).show();
         InfoWindow.closeAllInfoWindowsOn(map);
+        removeAllMarkers();
+        map.invalidate();
         return true;
     }
 
     @Override
     public boolean longPressHelper(GeoPoint p) {
-        removeAllMarkers();
         Marker pressedMarker = new Marker(map);
         pressedMarker.setPosition(p);
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         markerArrayList.add(pressedMarker);
         map.getOverlays().add(pressedMarker);
-        pressedMarker.setTitle("Here, really?");
+        pressedMarker.setTitle("Here, really? \n" + p.getLatitude()+","+p.getLongitude());
         map.invalidate();
         return true;
     }
