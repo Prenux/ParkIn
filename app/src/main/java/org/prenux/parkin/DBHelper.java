@@ -23,9 +23,8 @@ class DBHelper extends SQLiteOpenHelper {
     private static final String SPENDING_COLUMN_CAT = "category";
     private static final String SPENDING_COLUMN_DATE = "date";
 
-    DBHelper(Context context)
-    {
-        super(context, DATABASE_NAME , null, 1);
+    DBHelper(Context context) {
+        super(context, DATABASE_NAME, null, 1);
     }
 
 
@@ -35,36 +34,36 @@ class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(
-                "create table if not exists "+ SPENDING_TABLE_NAME +" " +
-                        "(" + SPENDING_COLUMN_ID + " integer primary key, "+ SPENDING_COLUMN_CATID +" integer,"
-                        + SPENDING_COLUMN_CAT +" text,"+ SPENDING_COLUMN_WHAT +" text,"+ SPENDING_COLUMN_PRICE +" float,"
+                "create table if not exists " + SPENDING_TABLE_NAME + " " +
+                        "(" + SPENDING_COLUMN_ID + " integer primary key, " + SPENDING_COLUMN_CATID + " integer,"
+                        + SPENDING_COLUMN_CAT + " text," + SPENDING_COLUMN_WHAT + " text," + SPENDING_COLUMN_PRICE + " float,"
                         + SPENDING_COLUMN_DATE + " text)"
         );
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS "+ SPENDING_TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + SPENDING_TABLE_NAME);
         onCreate(db);
     }
 
 
     //Get Data by SQL unique ID
-    public Cursor getDataByID(int id){
+    public Cursor getDataByID(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery( "select * from spending where id="+id, null );
+        return db.rawQuery("select * from spending where id=" + id, null);
     }
 
 
     // Get number of rows in the table
-    public int numberOfRows(){
+    public int numberOfRows() {
         SQLiteDatabase db = this.getReadableDatabase();
         return (int) DatabaseUtils.queryNumEntries(db, SPENDING_TABLE_NAME);
     }
 
-    public String updateExpense (Integer id, int catId, String catStr, String whatStr, Float priceFlt, String datStr)
-    {
-        String res= "";
+    public String updateExpense(Integer id, int catId, String catStr, String whatStr,
+                                Float priceFlt, String datStr) {
+        String res = "";
         try {
             SQLiteDatabase db = this.getWritableDatabase();
             ContentValues contentValues = new ContentValues();
@@ -74,26 +73,24 @@ class DBHelper extends SQLiteOpenHelper {
             contentValues.put(SPENDING_COLUMN_PRICE, priceFlt);
             contentValues.put(SPENDING_COLUMN_DATE, datStr);
             db.update("SPENDING", contentValues, "id = ? ", new String[]{Integer.toString(id)});
-        } catch (Exception e){
+        } catch (Exception e) {
             res = e.toString();
         }
         return res;
     }
 
     //Delete a row based on its unique ID
-    public Integer deleteRowbyID (Integer id)
-    {
+    public Integer deleteRowbyID(Integer id) {
         SQLiteDatabase db = this.getWritableDatabase();
         return db.delete("SPENDING",
                 "id = ? ",
-                new String[] { Integer.toString(id) });
+                new String[]{Integer.toString(id)});
     }
 
     //Delete the database
-    void deleteDb(Context context){
+    void deleteDb(Context context) {
         context.deleteDatabase(DATABASE_NAME);
     }
-
 
 
     //USELESS FOR THE CONTEXT BUT STAYS AS EXAMPLES FOR NOW
@@ -129,9 +126,6 @@ class DBHelper extends SQLiteOpenHelper {
         return array_list;
     }
     */
-
-
-
 
 
     // Example of raw SQL query
