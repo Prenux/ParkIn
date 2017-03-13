@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -17,6 +18,8 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.io.IOException;
@@ -25,10 +28,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
-    android.widget.SearchView mSearch;
-    MapView mMap;
-    private ArrayList<Marker> mMarkerArrayList;
     String mUserAgent = "org.prenux.parkin";
+
+    android.widget.SearchView mSearch;
+
+    private ArrayList<Marker> mMarkerArrayList;
+    MapView mMap;
+    RotationGestureOverlay mRotationGestureOverlay;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mapController.setZoom(18);
         GeoPoint startPoint = new GeoPoint(45.500997, -73.615783);
         mapController.setCenter(startPoint);
+
+        //Enable rotation of the map
+        mRotationGestureOverlay = new RotationGestureOverlay(this, mMap);
+        mRotationGestureOverlay.setEnabled(true);
+        mMap.getOverlays().add(this.mRotationGestureOverlay);
 
         //Set mMap event listener overlay
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
