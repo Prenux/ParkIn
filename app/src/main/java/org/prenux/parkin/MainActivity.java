@@ -1,6 +1,8 @@
 package org.prenux.parkin;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,11 +13,14 @@ import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.location.GeocoderNominatim;
+import org.osmdroid.bonuspack.location.NominatimPOIProvider;
+import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -35,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private ArrayList<Marker> mMarkerArrayList;
     MapView mMap;
     RotationGestureOverlay mRotationGestureOverlay;
+
+    NominatimPOIProvider mPoiProvider;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Set mMap event listener overlay
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
         mMap.getOverlays().add(0, mapEventsOverlay);
+
+        //Points of interests
+        mPoiProvider = new NominatimPOIProvider(mUserAgent);
+        new POIGettingTask().execute(startPoint);
 
     }
 
@@ -156,7 +167,36 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         protected void onPostExecute(String result) {
             marker.setTitle(result);
-            marker.showInfoWindow();
+            //marker.showInfoWindow();
         }
     }
+
+    //Async task to get POIs near a geopoint
+    private class POIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
+
+        protected ArrayList<POI> doInBackground(Object... params) {
+            //Points of interests
+            GeoPoint p = (GeoPoint) params[0];
+            return mPoiProvider.getPOICloseTo(p, "parking", 30, 0.01);
+        }
+
+        protected void onPostExecute(ArrayList<POI> pois) {
+            FolderOverlay poiMarkers = new FolderOverlay(getApplicationContext());
+            mMap.getOverlays().add(poiMarkers);
+            Drawable poiIcon = getResources().getDrawable(R.drawable.marker_default);
+            for (POI poi : pois) {
+                Marker poiMarker = new Marker(mMap);
+                poiMarker.setTitle(poi.mType);
+                poiMarker.setSnippet(poi.mDescription);
+                poiMarker.setPosition(poi.mLocation);
+                poiMarker.setIcon(poiIcon);
+                if (poi.mThumbnail != null) {
+                    poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
+                }
+                poiMarkers.add(poiMarker);
+            }
+            mMap.invalidate();
+        }
+    }
+
 }
