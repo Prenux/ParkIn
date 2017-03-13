@@ -7,10 +7,12 @@ import android.location.Address;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -28,22 +30,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MapEventsReceiver{
+public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
     android.widget.SearchView search;
     MapView map;
     private ArrayList<Marker> markerArrayList;
     String userAgent = "org.prenux.parkin";
 
-    @Override public void onCreate(Bundle savedInstanceState) {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Context ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
+        //Search things
         search = (android.widget.SearchView) findViewById(R.id.searchbar);
 
+        //Marker references arraylist
         markerArrayList = new ArrayList<>();
 
         //Initiate Map
@@ -66,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     }
 
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
@@ -77,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
-        Toast.makeText(this, "Tap on ("+p.getLatitude()+","+p.getLongitude()+")", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
         InfoWindow.closeAllInfoWindowsOn(map);
         removeAllMarkers();
         map.invalidate();
@@ -97,15 +102,14 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     private void removeAllMarkers() {
-        for (Marker marker: markerArrayList) {
+        for (Marker marker : markerArrayList) {
             marker.remove(map);
         }
         markerArrayList.clear();
     }
 
-    //http://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=45.49967331062899&lon=-73.6155492067337
-
-    public String getAddressFromGeoPoint(GeoPoint p){
+    //-------------------------- Reverse-Geocoding Things strongly inspired from https://github.com/MKergall/osmbonuspack ----------------------
+    public String getAddressFromGeoPoint(GeoPoint p) {
         GeocoderNominatim geocoder = new GeocoderNominatim(userAgent);
         String theAddress;
         try {
@@ -115,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             StringBuilder sb = new StringBuilder();
             if (addresses.size() > 0) {
                 //Address address = addresses.get(0);
-                for(Address address:addresses) {
+                for (Address address : addresses) {
                     int n = address.getMaxAddressLineIndex();
                     for (int i = 0; i <= n; i++) {
                         if (i != 0)
@@ -141,17 +145,15 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     //Async task to reverse-geocode the marker position in a separate thread:
     private class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
         Marker marker;
+
         protected String doInBackground(Object... params) {
-            marker = (Marker)params[0];
+            marker = (Marker) params[0];
             return getAddressFromGeoPoint(marker.getPosition());
         }
+
         protected void onPostExecute(String result) {
             marker.setTitle(result);
             marker.showInfoWindow();
         }
-    }
-
-    void test(View view){
-        Toast.makeText(getApplicationContext(),"This is a test",Toast.LENGTH_SHORT);
     }
 }
