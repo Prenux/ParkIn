@@ -1,12 +1,16 @@
 package org.prenux.parkin;
 
+import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Address;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -26,6 +30,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver{
 
+    android.widget.SearchView search;
     MapView map;
     private ArrayList<Marker> markerArrayList;
     String userAgent = "org.prenux.parkin";
@@ -37,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
+        search = (android.widget.SearchView) findViewById(R.id.searchbar);
+
         markerArrayList = new ArrayList<>();
 
         //Initiate Map
@@ -44,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        map.setMaxZoomLevel(19);
+        map.setMaxZoomLevel(18);
+        map.setTilesScaledToDpi(true);
 
         //Set default view point
         IMapController mapController = map.getController();
@@ -55,6 +63,14 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Set map event listener overlay
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
         map.getOverlays().add(0, mapEventsOverlay);
+
+       /* // Get the intent, verify the action and get the query
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            doMySearch(query);
+        }*/
+
     }
 
     public void onResume(){
@@ -83,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         markerArrayList.add(pressedMarker);
         map.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask().execute(pressedMarker);
-        //pressedMarker.setTitle( + "\n" +p.getLatitude()+","+p.getLongitude());
         map.invalidate();
         return true;
     }
@@ -97,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     //http://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=45.49967331062899&lon=-73.6155492067337
 
-    public String getAddress(GeoPoint p){
+    public String getAddressFromGeoPoint(GeoPoint p){
         GeocoderNominatim geocoder = new GeocoderNominatim(userAgent);
         String theAddress;
         try {
@@ -106,12 +121,14 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             List<Address> addresses = geocoder.getFromLocation(dLatitude, dLongitude, 1);
             StringBuilder sb = new StringBuilder();
             if (addresses.size() > 0) {
-                Address address = addresses.get(0);
-                int n = address.getMaxAddressLineIndex();
-                for (int i=0; i<=n; i++) {
-                    if (i!=0)
-                        sb.append(", ");
-                    sb.append(address.getAddressLine(i));
+                //Address address = addresses.get(0);
+                for(Address address:addresses) {
+                    int n = address.getMaxAddressLineIndex();
+                    for (int i = 0; i <= n; i++) {
+                        if (i != 0)
+                            sb.append(", ");
+                        sb.append(address.getAddressLine(i));
+                    }
                 }
                 theAddress = sb.toString();
             } else {
@@ -133,11 +150,15 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Marker marker;
         protected String doInBackground(Object... params) {
             marker = (Marker)params[0];
-            return getAddress(marker.getPosition());
+            return getAddressFromGeoPoint(marker.getPosition());
         }
         protected void onPostExecute(String result) {
-            marker.setSnippet(result);
+            marker.setTitle(result);
             marker.showInfoWindow();
         }
+    }
+
+    void test(View view){
+        Toast.makeText(getApplicationContext(),"This is a test",Toast.LENGTH_SHORT);
     }
 }
