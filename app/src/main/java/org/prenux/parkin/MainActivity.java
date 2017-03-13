@@ -16,13 +16,20 @@ import org.osmdroid.bonuspack.location.GeocoderNominatim;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.DefaultOverlayManager;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
@@ -33,15 +40,16 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
-    String mUserAgent = "org.prenux.parkin";
+    private String mUserAgent = "org.prenux.parkin";
 
-    android.widget.SearchView mSearch;
+    private android.widget.SearchView mSearch;
 
     private ArrayList<Marker> mMarkerArrayList;
-    MapView mMap;
-    RotationGestureOverlay mRotationGestureOverlay;
+    private MapView mMap;
+    private RotationGestureOverlay mRotationGestureOverlay;
 
-    NominatimPOIProvider mPoiProvider;
+    private NominatimPOIProvider mPoiProvider;
+    private FolderOverlay mPoiMarkers;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,10 +88,25 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
         mMap.getOverlays().add(0, mapEventsOverlay);
 
+        //Set scroll and zoom event actions
+        mMap.setMapListener(new DelayedMapListener(new MapListener() {
+            @Override
+            public boolean onZoom(ZoomEvent arg0) {
+                new POIGettingTask().execute(mMap.getBoundingBox());
+                return true;
+            }
+
+            @Override
+            public boolean onScroll(ScrollEvent arg0) {
+                new POIGettingTask().execute(mMap.getBoundingBox());
+                return true;
+            }
+        }));
+
         //Points of interests
         mPoiProvider = new NominatimPOIProvider(mUserAgent);
-        new POIGettingTask().execute(startPoint);
-
+        mPoiMarkers = new FolderOverlay(getApplicationContext());
+        mMap.getOverlays().add(mPoiMarkers);
     }
 
     public void onResume() {
@@ -95,12 +118,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
     }
 
+    // ------------------------------ Map events ---------------------------------------
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
         Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
         InfoWindow.closeAllInfoWindowsOn(mMap);
         removeAllMarkers();
-        mMap.invalidate();
+        removeAllPOIs();
         return true;
     }
 
@@ -112,17 +136,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMarkerArrayList.add(pressedMarker);
         mMap.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask().execute(pressedMarker);
-        mMap.invalidate();
         return true;
     }
 
-    private void removeAllMarkers() {
-        for (Marker marker : mMarkerArrayList) {
-            marker.remove(mMap);
-        }
-        mMarkerArrayList.clear();
-    }
-
+    //------------------------------ Geocoding & Markers-----------------------------------------
     public String getAddressFromGeoPoint(GeoPoint p) {
         GeocoderNominatim geocoder = new GeocoderNominatim(mUserAgent);
         String theAddress;
@@ -168,21 +185,31 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         protected void onPostExecute(String result) {
             marker.setTitle(result);
             //marker.showInfoWindow();
+            mMap.invalidate();
         }
     }
 
+    //Remove all user placed markers
+    private void removeAllMarkers() {
+        for (Marker marker : mMarkerArrayList) {
+            marker.remove(mMap);
+        }
+        mMarkerArrayList.clear();
+        mMap.invalidate();
+    }
+
+    // --------------------------- POI -----------------------
     //Async task to get POIs near a geopoint
     private class POIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
         protected ArrayList<POI> doInBackground(Object... params) {
             //Points of interests
-            GeoPoint p = (GeoPoint) params[0];
-            return mPoiProvider.getPOICloseTo(p, "parking", 30, 0.01);
+            BoundingBox box = (BoundingBox) params[0];
+            return mPoiProvider.getPOIInside(box, "parking", 50);
         }
 
         protected void onPostExecute(ArrayList<POI> pois) {
-            FolderOverlay poiMarkers = new FolderOverlay(getApplicationContext());
-            mMap.getOverlays().add(poiMarkers);
+            removeAllPOIs();
             Drawable poiIcon = getResources().getDrawable(R.drawable.marker_default);
             for (POI poi : pois) {
                 Marker poiMarker = new Marker(mMap);
@@ -193,9 +220,21 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 if (poi.mThumbnail != null) {
                     poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
                 }
-                poiMarkers.add(poiMarker);
+                mPoiMarkers.add(poiMarker);
             }
             mMap.invalidate();
+        }
+    }
+
+    //Remove all POI markers
+    private void removeAllPOIs() {
+        try {
+            List<Overlay> overlays = mPoiMarkers.getItems();
+            for (Overlay item : overlays) {
+                mPoiMarkers.remove(item);
+            }
+        } catch (Exception e) {
+            Toast.makeText(getApplicationContext(), R.string.searchView_hint, Toast.LENGTH_SHORT);
         }
     }
 
