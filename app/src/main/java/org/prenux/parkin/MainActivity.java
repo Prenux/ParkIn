@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.setBuiltInZoomControls(true);
         mMap.setMultiTouchControls(true);
         mMap.setMaxZoomLevel(18);
+        mMap.setMinZoomLevel(2);
         mMap.setTilesScaledToDpi(true);
 
         //Set default view point
@@ -88,18 +89,29 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
         mMap.getOverlays().add(0, mapEventsOverlay);
 
-        //Set scroll and zoom event actions
+        //Set scroll and zoom event actions to update POI
         mMap.setMapListener(new DelayedMapListener(new MapListener() {
+
+            int zoomThreshold = 14;
+
             @Override
             public boolean onZoom(ZoomEvent arg0) {
-                new POIGettingTask().execute(mMap.getBoundingBox());
-                return true;
+                if(mMap.getZoomLevel() >= zoomThreshold) {
+                    new POIGettingTask().execute(mMap.getBoundingBox());
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
             @Override
             public boolean onScroll(ScrollEvent arg0) {
-                new POIGettingTask().execute(mMap.getBoundingBox());
-                return true;
+                if(mMap.getZoomLevel() >= zoomThreshold) {
+                    new POIGettingTask().execute(mMap.getBoundingBox());
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }));
 
