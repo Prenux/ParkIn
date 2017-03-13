@@ -23,4 +23,5 @@
         android:id="@+id/searchbar"
         android:queryHint="@string/searchView_hint"
         android:iconifiedByDefault="false"/>
+
 </RelativeLayout>

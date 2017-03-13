@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -39,8 +38,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
+        //Search things
         mSearch = (android.widget.SearchView) findViewById(R.id.searchbar);
 
+        //Marker references arraylist
         mMarkerArrayList = new ArrayList<>();
 
         //Initiate Map
@@ -100,8 +101,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMarkerArrayList.clear();
     }
 
-    //http://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=45.49967331062899&lon=-73.6155492067337
-
     public String getAddressFromGeoPoint(GeoPoint p) {
         GeocoderNominatim geocoder = new GeocoderNominatim(mUserAgent);
         String theAddress;
@@ -148,9 +147,5 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             marker.setTitle(result);
             marker.showInfoWindow();
         }
-    }
-
-    void test(View view) {
-        Toast.makeText(getApplicationContext(), "This is a test", Toast.LENGTH_SHORT);
     }
 }
