@@ -44,21 +44,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        map.setMaxZoomLevel(21);
+        map.setMaxZoomLevel(19);
 
         //Set default view point
         IMapController mapController = map.getController();
-        mapController.setZoom(19);
+        mapController.setZoom(18);
         GeoPoint startPoint = new GeoPoint(45.500997, -73.615783);
         mapController.setCenter(startPoint);
-
-        //Set Marker on default view point
-        Marker startMarker = new Marker(map);
-        startMarker.setPosition(startPoint);
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        markerArrayList.add(startMarker);
-        map.getOverlays().add(startMarker);
-        startMarker.setTitle("Super Smash School");
 
         //Set map event listener overlay
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
@@ -90,7 +82,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
         markerArrayList.add(pressedMarker);
         map.getOverlays().add(pressedMarker);
-        pressedMarker.setTitle(p.getLatitude()+","+p.getLongitude());
+        new ReverseGeocodingTask().execute(pressedMarker);
+        //pressedMarker.setTitle( + "\n" +p.getLatitude()+","+p.getLongitude());
         map.invalidate();
         return true;
     }
@@ -102,18 +95,49 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         markerArrayList.clear();
     }
 
-    //Get address from a geolocalisation
-    public String getAddressFromGeoPoint(GeoPoint p){
-        String address;
-        GeocoderNominatim gc = new GeocoderNominatim(userAgent);
-        double latitude = p.getLatitude();
-        double longitude = p.getLongitude();
+    //http://nominatim.openstreetmap.org/reverse?format=json&accept-language=en&lat=45.49967331062899&lon=-73.6155492067337
+
+    public String getAddress(GeoPoint p){
+        GeocoderNominatim geocoder = new GeocoderNominatim(userAgent);
+        String theAddress;
         try {
-            List<Address> addresses = gc.getFromLocation(latitude, longitude, 1);
-            Log.i("ADDRESSES", ;
+            double dLatitude = p.getLatitude();
+            double dLongitude = p.getLongitude();
+            List<Address> addresses = geocoder.getFromLocation(dLatitude, dLongitude, 1);
+            StringBuilder sb = new StringBuilder();
+            if (addresses.size() > 0) {
+                Address address = addresses.get(0);
+                int n = address.getMaxAddressLineIndex();
+                for (int i=0; i<=n; i++) {
+                    if (i!=0)
+                        sb.append(", ");
+                    sb.append(address.getAddressLine(i));
+                }
+                theAddress = sb.toString();
+            } else {
+                theAddress = null;
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            theAddress = null;
         }
-        return address;
+        if (theAddress != null) {
+            return theAddress;
+        } else {
+            return "";
+        }
+    }
+
+
+    //Async task to reverse-geocode the marker position in a separate thread:
+    private class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
+        Marker marker;
+        protected String doInBackground(Object... params) {
+            marker = (Marker)params[0];
+            return getAddress(marker.getPosition());
+        }
+        protected void onPostExecute(String result) {
+            marker.setSnippet(result);
+            marker.showInfoWindow();
+        }
     }
 }
