@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ParkIn</string>
     <string name="searchView_hint">Where are you going?</string>
+    <string name="offstreet_parking">Offstreet Parking</string>
 </resources>

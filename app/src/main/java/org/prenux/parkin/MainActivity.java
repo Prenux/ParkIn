@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             Drawable poiIcon = getResources().getDrawable(R.drawable.marker_parking);
             for (POI poi : pois) {
                 Marker poiMarker = new Marker(mMap);
-                poiMarker.setTitle(poi.mType);
+                poiMarker.setTitle(getString(R.string.offstreet_parking));
                 poiMarker.setSnippet(poi.mDescription);
                 poiMarker.setPosition(poi.mLocation);
                 poiMarker.setIcon(poiIcon);
