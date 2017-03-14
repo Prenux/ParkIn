@@ -217,12 +217,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         protected ArrayList<POI> doInBackground(Object... params) {
             //Points of interests
             BoundingBox box = (BoundingBox) params[0];
-            return mPoiProvider.getPOIInside(box, "parking", 50);
+            return mPoiProvider.getPOIInside(box, "Parking", 50);
         }
 
         protected void onPostExecute(ArrayList<POI> pois) {
             removeAllPOIs();
-            Drawable poiIcon = getResources().getDrawable(R.drawable.marker_default);
+            Drawable poiIcon = getResources().getDrawable(R.drawable.marker_parking);
             for (POI poi : pois) {
                 Marker poiMarker = new Marker(mMap);
                 poiMarker.setTitle(poi.mType);
