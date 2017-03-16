@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:orientation="vertical"
@@ -23,5 +24,20 @@
         android:id="@+id/searchbar"
         android:queryHint="@string/searchView_hint"
         android:iconifiedByDefault="false"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/locationFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="15dp"
+        android:clickable="true"
+        android:src="@drawable/ic_menu_mylocation"
+        app:fabSize="mini"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/searchbar"
+        android:layout_alignEnd="@+id/searchbar"
+        android:layout_marginEnd="15dp"
+        android:onClick="getPosition"/>
 
 </RelativeLayout>

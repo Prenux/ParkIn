@@ -1,14 +1,26 @@
 package org.prenux.parkin;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.View;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -25,12 +37,11 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.DefaultOverlayManager;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
-import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
@@ -48,8 +59,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private MapView mMap;
     private RotationGestureOverlay mRotationGestureOverlay;
 
-    private NominatimPOIProvider mPoiProvider;
+    private NominatimPOIProvider mParkingPoiProvider;
     private FolderOverlay mPoiMarkers;
+    private Polyline mPolyline;
+
+    LocationManager mLocationManager;
+
+    private final static int M_ZOOM_THRESHOLD = 14;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,8 +75,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
+        //GPS Postion things
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
         //Search things
-        mSearch = (android.widget.SearchView) findViewById(R.id.searchbar);
+        mSearch = (SearchView) findViewById(R.id.searchbar);
 
         //Marker references arraylist
         mMarkerArrayList = new ArrayList<>();
@@ -91,13 +110,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         //Set scroll and zoom event actions to update POI
         mMap.setMapListener(new DelayedMapListener(new MapListener() {
-
-            int zoomThreshold = 14;
-
             @Override
             public boolean onZoom(ZoomEvent arg0) {
-                if(mMap.getZoomLevel() >= zoomThreshold) {
-                    new POIGettingTask().execute(mMap.getBoundingBox());
+                if (mMap.getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                    new ParkingPOIGettingTask().execute(mMap.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -106,8 +122,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
             @Override
             public boolean onScroll(ScrollEvent arg0) {
-                if(mMap.getZoomLevel() >= zoomThreshold) {
-                    new POIGettingTask().execute(mMap.getBoundingBox());
+                if (mMap.getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                    new ParkingPOIGettingTask().execute(mMap.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -116,9 +132,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         }));
 
         //Points of interests
-        mPoiProvider = new NominatimPOIProvider(mUserAgent);
+        mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
         mPoiMarkers = new FolderOverlay(getApplicationContext());
         mMap.getOverlays().add(mPoiMarkers);
+
+        BoundingBox viewbox = mMap.getBoundingBox();
+        new GeocodingTask().execute("J4B 7T9, Qc, Canada", viewbox);
     }
 
     public void onResume() {
@@ -154,39 +173,28 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     //------------------------------ Geocoding & Markers-----------------------------------------
     public String getAddressFromGeoPoint(GeoPoint p) {
         GeocoderNominatim geocoder = new GeocoderNominatim(mUserAgent);
-        String theAddress;
+        StringBuilder theAddress = new StringBuilder();
         try {
             double dLatitude = p.getLatitude();
             double dLongitude = p.getLongitude();
             List<Address> addresses = geocoder.getFromLocation(dLatitude, dLongitude, 1);
-            StringBuilder sb = new StringBuilder();
-            if (addresses.size() > 0) {
-                //Address address = addresses.get(0);
-                for (Address address : addresses) {
-                    int n = address.getMaxAddressLineIndex();
-                    for (int i = 0; i <= n; i++) {
-                        if (i != 0)
-                            sb.append(", ");
-                        sb.append(address.getAddressLine(i));
-                    }
+            //Address address = addresses.get(0);
+            for (Address address : addresses) {
+                int n = address.getMaxAddressLineIndex();
+                for (int i = 0; i <= n; i++) {
+                    if (i != 0)
+                        theAddress.append(", ");
+                    theAddress.append(address.getAddressLine(i));
                 }
-                theAddress = sb.toString();
-            } else {
-                theAddress = null;
             }
         } catch (IOException e) {
-            theAddress = null;
         }
-        if (theAddress != null) {
-            return theAddress;
-        } else {
-            return "";
-        }
+        return theAddress.toString();
     }
 
 
     //Async task to reverse-geocode the marker position in a separate thread:
-    private class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
+    class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
         Marker marker;
 
         protected String doInBackground(Object... params) {
@@ -201,6 +209,78 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         }
     }
 
+    //Geocoding Task
+    private class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
+        int mIndex;
+
+        protected List<Address> doInBackground(Object... params) {
+            String locationAddress = (String) params[0];
+            BoundingBox box = (BoundingBox) params[1];
+            FixedGeocoderNominatim geocoder = new FixedGeocoderNominatim(mUserAgent);
+            geocoder.setOptions(true); //ask for enclosing polygon (if any)
+            try {
+                List<Address> foundAdresses = geocoder.getFromLocationName(locationAddress, 1,
+                        box.getLatSouth(), box.getLonEast(),
+                        box.getLatNorth(), box.getLonWest(), false);
+                return foundAdresses;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        protected void onPostExecute(List<Address> foundAdresses) {
+            if (foundAdresses == null) {
+                Toast.makeText(getApplicationContext(), "Geocoding error", Toast.LENGTH_SHORT).show();
+            } else if (foundAdresses.size() == 0) { //if no address found, display an error
+                Toast.makeText(getApplicationContext(), "Address not found.", Toast.LENGTH_SHORT).show();
+            } else {
+                Address address = foundAdresses.get(0); //get first address
+                String addressDisplayName = address.getExtras().getString("display_name");
+                GeoPoint destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
+                //Marker markerDestination = new Marker(mMap);
+                mMap.getController().setCenter(destinationPoint);
+                //get and display enclosing polygon:
+                Bundle extras = address.getExtras();
+                if (extras != null && extras.containsKey("polygonpoints")) {
+                    ArrayList<GeoPoint> polygon = extras.getParcelableArrayList("polygonpoints");
+                    //Log.d("DEBUG", "polygon:"+polygon.size());
+                    updateUIWithPolygon(polygon, addressDisplayName);
+                } else {
+                    updateUIWithPolygon(null, "");
+                }
+            }
+        }
+    }
+
+    //add or replace the polygon overlay
+    public void updateUIWithPolygon(ArrayList<GeoPoint> polygon, String name) {
+        List<Overlay> mapOverlays = mMap.getOverlays();
+        int location = -1;
+        if (mPolyline != null)
+            location = mapOverlays.indexOf(mPolyline);
+        mPolyline = new Polyline();
+        mPolyline.setColor(0x800000FF);
+        mPolyline.setWidth(5.0f);
+        mPolyline.setTitle(name);
+        BoundingBox bb = null;
+        if (polygon != null) {
+            mPolyline.setPoints(polygon);
+            bb = BoundingBox.fromGeoPoints(polygon);
+        }
+        if (location != -1)
+            mapOverlays.set(location, mPolyline);
+        else
+            mapOverlays.add(1, mPolyline); //insert just above the MapEventsOverlay.
+        setViewOn(bb);
+        mMap.invalidate();
+    }
+
+    void setViewOn(BoundingBox bb) {
+        if (bb != null) {
+            mMap.zoomToBoundingBox(bb, true);
+        }
+    }
+
     //Remove all user placed markers
     private void removeAllMarkers() {
         for (Marker marker : mMarkerArrayList) {
@@ -210,29 +290,34 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.invalidate();
     }
 
-    // --------------------------- POI -----------------------
+    // ------------------------------------- POI ---------------------------------------------------
     //Async task to get POIs near a geopoint
-    private class POIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
+    private class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
         protected ArrayList<POI> doInBackground(Object... params) {
             //Points of interests
             BoundingBox box = (BoundingBox) params[0];
-            return mPoiProvider.getPOIInside(box, "Parking", 50);
+            return mParkingPoiProvider.getPOIInside(box, "Parking", 50);
         }
 
         protected void onPostExecute(ArrayList<POI> pois) {
             removeAllPOIs();
             Drawable poiIcon = getResources().getDrawable(R.drawable.marker_parking);
-            for (POI poi : pois) {
-                Marker poiMarker = new Marker(mMap);
-                poiMarker.setTitle(getString(R.string.offstreet_parking));
-                poiMarker.setSnippet(poi.mDescription);
-                poiMarker.setPosition(poi.mLocation);
-                poiMarker.setIcon(poiIcon);
-                if (poi.mThumbnail != null) {
-                    poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
+            try {
+                for (POI poi : pois) {
+                    Marker poiMarker = new Marker(mMap);
+                    poiMarker.setTitle(getString(R.string.offstreet_parking));
+                    poiMarker.setSnippet(poi.mDescription);
+                    poiMarker.setPosition(poi.mLocation);
+                    poiMarker.setIcon(poiIcon);
+                    if (poi.mThumbnail != null) {
+                        poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
+                    }
+                    mPoiMarkers.add(poiMarker);
                 }
-                mPoiMarkers.add(poiMarker);
+            } catch (Exception e) {
+                Log.d("ParkingPOIGettingTask", e.toString());
+                Toast.makeText(getApplicationContext(), "Error in ParkingPOIGettingTask", Toast.LENGTH_LONG);
             }
             mMap.invalidate();
         }
@@ -246,8 +331,52 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 mPoiMarkers.remove(item);
             }
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), R.string.searchView_hint, Toast.LENGTH_SHORT);
+            Toast.makeText(getApplicationContext(), "Error in removing all POIs", Toast.LENGTH_LONG);
         }
+    }
+
+    //Executed when GPS position is requested
+    public void getPosition(View view) {
+        //Check if location services are enabled
+        if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                !mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            // Build the alert dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Unable to get position");
+            builder.setMessage("Do you want to enable location services?");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Show location settings
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+            return;
+        }
+
+        //if location services are enabled
+        LocationListener locationListener = new myLocationListener();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mLocationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+        new ReverseGeocodingTask().execute(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     }
 
 }
