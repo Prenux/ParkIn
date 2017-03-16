@@ -1,5 +1,5 @@
 ### Implement Search and search proposal
-
+- Search for an address;
 
 ### Implement CSV to SQLite
 
@@ -8,4 +8,13 @@
 
 
 ### Implement Drawer and Settings view
+Show (on/off):
+- Offstreet parkings;
+- Free parkings; (law allow to park right now)
+- Paying parkings;
 
+# Roadmanager (https://github.com/MKergall/osmbonuspack/wiki/Tutorial_1)
+- Draw road from user position --> to selected parking;
+
+# Clean MainActivity.java
+- AsyncTask in separate classes
