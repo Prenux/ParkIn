@@ -16,13 +16,13 @@ import java.util.List;
  */
 
 //Geocoding Task
-public class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
+class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
     int mIndex;
-    public String mUserAgent;
-    public MainActivity mMainActivity;
-    public MapHandler mMapHandler;
+    String mUserAgent;
+    MainActivity mMainActivity;
+    MapHandler mMapHandler;
 
-    public GeocodingTask(String ua, MainActivity ma, MapHandler mh) {
+    GeocodingTask(String ua, MainActivity ma, MapHandler mh) {
         mUserAgent = ua;
         mMainActivity = ma;
         mMapHandler = mh;

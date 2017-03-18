@@ -1,7 +1,6 @@
 package org.prenux.parkin;
 
 import android.content.Context;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
@@ -30,20 +29,18 @@ import java.util.List;
  * Created by sugar on 3/18/17.
  */
 
-public class MapHandler extends MapView {
+class MapHandler extends MapView {
     //Initializing fields
-    public RotationGestureOverlay mRotationGestureOverlay;
-    public final static int M_ZOOM_THRESHOLD = 14;
-    public MainActivity mMainActivity;
-    public NominatimPOIProvider mParkingPoiProvider;
-    public FolderOverlay mPoiMarkers;
-    public String mUserAgent;
-    public MapHandler mMapHandler;
-    private Polyline mPolyline;
+    RotationGestureOverlay mRotationGestureOverlay;
+    final static int M_ZOOM_THRESHOLD = 14;
+    MainActivity mMainActivity;
+    NominatimPOIProvider mParkingPoiProvider;
+    FolderOverlay mPoiMarkers;
+    String mUserAgent;
+    MapHandler mMapHandler;
+    Polyline mPolyline;
 
-
-    //TODO: find version of controller used
-    public MapHandler(final Context context, final AttributeSet attrs) {
+    MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -110,7 +107,7 @@ public class MapHandler extends MapView {
     }
 
     //Remove all POI markers
-    public void removeAllPOIs() {
+    void removeAllPOIs() {
         try {
             List<Overlay> overlays = mPoiMarkers.getItems();
             for (Overlay item : overlays) {
@@ -128,7 +125,7 @@ public class MapHandler extends MapView {
     }
 
     //add or replace the polygon overlay
-    public void updateUIWithPolygon(ArrayList<GeoPoint> polygon, String name) {
+    void updateUIWithPolygon(ArrayList<GeoPoint> polygon, String name) {
         List<Overlay> mapOverlays = this.getOverlays();
         int location = -1;
         if (mPolyline != null)

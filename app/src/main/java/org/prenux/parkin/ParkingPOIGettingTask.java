@@ -19,14 +19,14 @@ import java.util.ArrayList;
  * Created by sugar on 3/18/17.
  */
 
-public class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
+class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
-    public NominatimPOIProvider mParkingPoiProvider;
-    public FolderOverlay mPoiMarkers;
-    public Context mMainActivity;
-    public MapHandler mMapHandler;
+    NominatimPOIProvider mParkingPoiProvider;
+    FolderOverlay mPoiMarkers;
+    Context mMainActivity;
+    MapHandler mMapHandler;
 
-    public ParkingPOIGettingTask(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
+    ParkingPOIGettingTask(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
         mParkingPoiProvider = npp;
         mPoiMarkers = fo;
         mMainActivity = ma;
