@@ -75,6 +75,28 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         //Search things
         mSearch = (SearchView) findViewById(R.id.searchbar);
+        mSearch.setOnQueryTextListener( new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    if( query.length() != 0){
+                        BoundingBox viewbox = mMap.getBoundingBox();
+                        new GeocodingTask().execute(query, viewbox);
+                        return true;
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+             }
+        );
+        //Marker references arraylist
+        mMarkerArrayList = new ArrayList<>();
+
+        //Initiate Map
+        mMap = (MapView) findViewById(R.id.map);
 
         //Marker references arraylist
         mMarkerArrayList = new ArrayList<>();
@@ -130,9 +152,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
         mPoiMarkers = new FolderOverlay(getApplicationContext());
         mMap.getOverlays().add(mPoiMarkers);
-
-        BoundingBox viewbox = mMap.getBoundingBox();
-        new GeocodingTask().execute("ste-catherine, montreal", viewbox);
     }
 
     public void onResume() {
