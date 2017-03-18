@@ -27,26 +27,18 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.location.GeocoderNominatim;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapEventsReceiver;
-import org.osmdroid.events.MapListener;
-import org.osmdroid.events.ScrollEvent;
-import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.io.IOException;
@@ -58,16 +50,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     //Test drawer
     final String[] data = {"one", "two", "three"};
 
-    private String mUserAgent = "org.prenux.parkin";
+    public String mUserAgent = "org.prenux.parkin";
     private android.widget.SearchView mSearch;
     private ArrayList<Marker> mMarkerArrayList;
-    private MapView mMap;
-    private RotationGestureOverlay mRotationGestureOverlay;
-    private NominatimPOIProvider mParkingPoiProvider;
-    private FolderOverlay mPoiMarkers;
+    private MapHandler mMap;
     private Polyline mPolyline;
     LocationManager mLocationManager;
-    private final static int M_ZOOM_THRESHOLD = 14;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,57 +93,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Marker references arraylist
         mMarkerArrayList = new ArrayList<>();
 
-        //Initiate Map
-        mMap = (MapView) findViewById(R.id.map);
-        mMap.setTileSource(TileSourceFactory.MAPNIK);
-        mMap.setBuiltInZoomControls(true);
-        mMap.setMultiTouchControls(true);
-        mMap.setMaxZoomLevel(18);
-        mMap.setMinZoomLevel(2);
-        mMap.setTilesScaledToDpi(true);
+        //Initiate Map in constructor class
+        mMap = (MapHandler) findViewById(R.id.map);
+        mMap.intializeMap(getApplicationContext(), mUserAgent);
 
-        //Set default view point
-        IMapController mapController = mMap.getController();
-        mapController.setZoom(18);
-        GeoPoint startPoint = new GeoPoint(45.500997, -73.615783);
-        mapController.setCenter(startPoint);
-
-        //Enable rotation of the map
-        mRotationGestureOverlay = new RotationGestureOverlay(this, mMap);
-        mRotationGestureOverlay.setEnabled(true);
-        mMap.getOverlays().add(this.mRotationGestureOverlay);
-
-        //Set mMap event listener overlay
-        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this, this);
-        mMap.getOverlays().add(0, mapEventsOverlay);
-
-        //Set scroll and zoom event actions to update POI
-        mMap.setMapListener(new DelayedMapListener(new MapListener() {
-            @Override
-            public boolean onZoom(ZoomEvent arg0) {
-                if (mMap.getZoomLevel() >= M_ZOOM_THRESHOLD) {
-                    new ParkingPOIGettingTask().execute(mMap.getBoundingBox());
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-            @Override
-            public boolean onScroll(ScrollEvent arg0) {
-                if (mMap.getZoomLevel() >= M_ZOOM_THRESHOLD) {
-                    new ParkingPOIGettingTask().execute(mMap.getBoundingBox());
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        }));
-
-        //Points of interests
-        mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
-        mPoiMarkers = new FolderOverlay(getApplicationContext());
-        mMap.getOverlays().add(mPoiMarkers);
 
         BoundingBox viewbox = mMap.getBoundingBox();
         new GeocodingTask().execute("ste-catherine, montreal", viewbox);
@@ -176,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
         InfoWindow.closeAllInfoWindowsOn(mMap);
         removeAllMarkers();
-        removeAllPOIs();
+        mMap.removeAllPOIs();
         return true;
     }
 
@@ -313,50 +254,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     // ------------------------------------- POI ---------------------------------------------------
-//Async task to get POIs near a geopoint
-    private class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
-        protected ArrayList<POI> doInBackground(Object... params) {
-            //Points of interests
-            BoundingBox box = (BoundingBox) params[0];
-            return mParkingPoiProvider.getPOIInside(box, "Parking", 50);
-        }
-
-        protected void onPostExecute(ArrayList<POI> pois) {
-            removeAllPOIs();
-            Drawable poiIcon = getResources().getDrawable(R.drawable.marker_parking);
-            try {
-                for (POI poi : pois) {
-                    Marker poiMarker = new Marker(mMap);
-                    poiMarker.setTitle(getString(R.string.offstreet_parking));
-                    poiMarker.setSnippet(poi.mDescription);
-                    poiMarker.setPosition(poi.mLocation);
-                    poiMarker.setIcon(poiIcon);
-                    if (poi.mThumbnail != null) {
-                        poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
-                    }
-                    mPoiMarkers.add(poiMarker);
-                }
-            } catch (Exception e) {
-                Log.d("ParkingPOIGettingTask", e.toString());
-                Toast.makeText(getApplicationContext(), "Error in ParkingPOIGettingTask", Toast.LENGTH_LONG);
-            }
-            mMap.invalidate();
-        }
-
-    }
-
-    //Remove all POI markers
-    private void removeAllPOIs() {
-        try {
-            List<Overlay> overlays = mPoiMarkers.getItems();
-            for (Overlay item : overlays) {
-                mPoiMarkers.remove(item);
-            }
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "Error in removing all POIs", Toast.LENGTH_LONG);
-        }
-    }
 
     //Executed when GPS position is requested
     public void getPosition(View view) {
