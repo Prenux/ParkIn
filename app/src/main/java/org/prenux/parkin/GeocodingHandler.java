@@ -22,20 +22,22 @@ import java.util.List;
  * Created by sugar on 3/18/17.
  */
 
-public class GeocodingHandler {
-    public LocationManager mLocationManager;
-    public String mUserAgent;
-    public MainActivity mMainActivity;
-    public MapHandler mMapHandler;
+class GeocodingHandler {
+    LocationManager mLocationManager;
+    String mUserAgent;
+    MainActivity mMainActivity;
+    MapHandler mMapHandler;
+    LocationListener mLocationListener;
 
-    public GeocodingHandler(LocationManager lm, String ua, MainActivity ma, MapHandler mh) {
+    GeocodingHandler(LocationManager lm, String ua, MainActivity ma, MapHandler mh) {
         mLocationManager = lm;
         mUserAgent = ua;
         mMainActivity = ma;
         mMapHandler = mh;
+        mLocationListener = new myLocationListener();
     }
 
-    public String getAddressFromGeoPoint(GeoPoint p) {
+    String getAddressFromGeoPoint(GeoPoint p) {
         GeocoderNominatim geocoder = new GeocoderNominatim(mUserAgent);
         StringBuilder theAddress = new StringBuilder();
         try {
@@ -57,7 +59,7 @@ public class GeocodingHandler {
     }
 
     //Executed when GPS position is requested
-    public void getPosition() {
+    void getPosition() {
         //Check if location services are enabled
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
@@ -84,7 +86,6 @@ public class GeocodingHandler {
         }
 
         //if location services are enabled
-        LocationListener locationListener = new myLocationListener();
         if (ActivityCompat.checkSelfPermission(mMainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(mMainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -99,7 +100,7 @@ public class GeocodingHandler {
             return;
         }
         mLocationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+                LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
         new ReverseGeocodingTask(this, mMapHandler).execute(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
     }
 

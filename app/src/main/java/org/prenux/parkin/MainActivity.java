@@ -2,6 +2,7 @@ package org.prenux.parkin;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteCursor;
+import android.content.res.Resources;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -26,9 +27,6 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
-
-    //Test drawer
-    final String[] data = {"one", "two", "three"};
 
     public String mUserAgent = "org.prenux.parkin";
     private ArrayList<Marker> mMarkerArrayList;
@@ -60,7 +58,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap = (MapHandler) findViewById(R.id.map);
         mMap.intializeMap(mMainActivity, mUserAgent);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(mMainActivity, android.R.layout.simple_list_item_1, data);
+        Resources res = getResources();
+        String[] drawerItems = res.getStringArray(R.array.drawer_options);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(mMainActivity, android.R.layout.simple_list_item_1, drawerItems);
 
         mIsDrawerOpen = false;
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);

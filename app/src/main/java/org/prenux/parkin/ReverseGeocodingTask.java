@@ -11,10 +11,10 @@ import org.osmdroid.views.overlay.Marker;
 //Async task to reverse-geocode the marker position in a separate thread:
 class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     Marker marker;
-    public GeocodingHandler mGeoHandler;
-    public MapHandler mMapHandler;
+    GeocodingHandler mGeoHandler;
+    MapHandler mMapHandler;
 
-    public ReverseGeocodingTask(GeocodingHandler gh, MapHandler mh) {
+    ReverseGeocodingTask(GeocodingHandler gh, MapHandler mh) {
         mGeoHandler = gh;
         mMapHandler = mh;
     }
