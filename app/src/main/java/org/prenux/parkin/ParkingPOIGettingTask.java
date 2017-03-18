@@ -26,11 +26,11 @@ public class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI
     public Context mMainActivity;
     public MapHandler mMapHandler;
 
-    public void setPOIattributes(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
-        this.mParkingPoiProvider = npp;
-        this.mPoiMarkers = fo;
-        this.mMainActivity = ma;
-        this.mMapHandler = mapHandler;
+    public ParkingPOIGettingTask(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
+        mParkingPoiProvider = npp;
+        mPoiMarkers = fo;
+        mMainActivity = ma;
+        mMapHandler = mapHandler;
     }
 
     protected ArrayList<POI> doInBackground(Object... params) {

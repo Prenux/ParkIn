@@ -14,13 +14,16 @@ import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,32 +39,12 @@ public class MapHandler extends MapView {
     public FolderOverlay mPoiMarkers;
     public String mUserAgent;
     public MapHandler mMapHandler;
+    private Polyline mPolyline;
+
 
     //TODO: find version of controller used
     public MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
-    }
-
-    public MapHandler(final Context context) {
-        super(context);
-    }
-
-
-    public MapHandler(final Context context,
-                      final MapTileProviderBase aTileProvider) {
-        super(context, aTileProvider);
-    }
-
-    public MapHandler(final Context context,
-                      final MapTileProviderBase aTileProvider,
-                      final Handler tileRequestCompleteHandler) {
-        super(context, aTileProvider, tileRequestCompleteHandler);
-    }
-
-    public MapHandler(final Context context, MapTileProviderBase tileProvider,
-                      final Handler tileRequestCompleteHandler, final AttributeSet attrs) {
-        super(context, tileProvider, tileRequestCompleteHandler, attrs);
-
     }
 
     void intializeMap(final MainActivity ma, String ua) {
@@ -105,9 +88,8 @@ public class MapHandler extends MapView {
             @Override
             public boolean onZoom(ZoomEvent arg0) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
-                    ParkingPOIGettingTask ppgt = new ParkingPOIGettingTask();
-                    ppgt.setPOIattributes(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler);
-                    ppgt.execute(mMapHandler.getBoundingBox());
+                    new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
+                            execute(mMapHandler.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -117,9 +99,8 @@ public class MapHandler extends MapView {
             @Override
             public boolean onScroll(ScrollEvent arg0) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
-                    ParkingPOIGettingTask ppgt = new ParkingPOIGettingTask();
-                    ppgt.setPOIattributes(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler);
-                    ppgt.execute(mMapHandler.getBoundingBox());
+                    new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
+                            execute(mMapHandler.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -138,5 +119,34 @@ public class MapHandler extends MapView {
         } catch (Exception e) {
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
+    }
+
+    void setViewOn(BoundingBox bb) {
+        if (bb != null) {
+            this.zoomToBoundingBox(bb, true);
+        }
+    }
+
+    //add or replace the polygon overlay
+    public void updateUIWithPolygon(ArrayList<GeoPoint> polygon, String name) {
+        List<Overlay> mapOverlays = this.getOverlays();
+        int location = -1;
+        if (mPolyline != null)
+            location = mapOverlays.indexOf(mPolyline);
+        mPolyline = new Polyline();
+        mPolyline.setColor(0x800000FF);
+        mPolyline.setWidth(10.0f);
+        mPolyline.setTitle(name);
+        BoundingBox bb = null;
+        if (polygon != null) {
+            mPolyline.setPoints(polygon);
+            bb = BoundingBox.fromGeoPoints(polygon);
+        }
+        if (location != -1)
+            mapOverlays.set(location, mPolyline);
+        else
+            mapOverlays.add(1, mPolyline); //insert just above the MapEventsOverlay.
+        setViewOn(bb);
+        this.invalidate();
     }
 }
