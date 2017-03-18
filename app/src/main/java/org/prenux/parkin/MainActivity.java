@@ -1,6 +1,7 @@
 package org.prenux.parkin;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteCursor;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -37,6 +38,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private DrawerLayout mDrawer;
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
+
+    private SuggestionsDatabase database;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -81,16 +85,18 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
 
         //Search things
-        SearchView search = (SearchView) findViewById(R.id.searchbar);
+        final SearchView search = (SearchView) findViewById(R.id.searchbar);
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                long result = database.insertSuggestion(query);
+
                 if (query.length() != 0) {
                     BoundingBox viewbox = mMap.getBoundingBox();
                     new GeocodingTask(mUserAgent, mMainActivity, mMap).execute(query, viewbox);
-                    return true;
+                    return result != -1;
                 }
-                return false;
+                return result != -1;
             }
 
             @Override
@@ -98,6 +104,23 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 return false;
             }
         });
+
+        database = new SuggestionsDatabase( this);
+        search.setOnSuggestionListener( new SearchView.OnSuggestionListener(){
+            @Override
+            public boolean onSuggestionSelect(int position) {return false;}
+
+            @Override
+            public boolean onSuggestionClick(int position) {
+                SQLiteCursor cursor = (SQLiteCursor) search.getSuggestionsAdapter().getItem(position);
+                int indexColumnSuggestion = cursor.getColumnIndex( SuggestionsDatabase.FIELD_SUGGESTION);
+
+                search.setQuery(cursor.getString(indexColumnSuggestion), false);
+
+                return true;
+            }
+        });
+
     }
 
 
