@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private MapHandler mMap;
     private Polyline mPolyline;
     LocationManager mLocationManager;
+    private DrawerLayout mDrawer;
+    private boolean mIsDrawerOpen;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,22 +68,30 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
+        //Marker references arraylist
+        mMarkerArrayList = new ArrayList<>();
+
+        //Initiate Map in constructor class
+        mMap = (MapHandler) findViewById(R.id.map);
+        mMap.intializeMap(this, mUserAgent);
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
 
-        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mIsDrawerOpen = false;
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView navList = (ListView) findViewById(R.id.left_drawer);
         navList.setAdapter(adapter);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                drawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+                mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
                         super.onDrawerClosed(drawerView);
 
                     }
                 });
-                drawer.closeDrawer(navList);
+                mDrawer.closeDrawer(navList);
             }
         });
 
@@ -89,18 +100,24 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         //Search things
         mSearch = (SearchView) findViewById(R.id.searchbar);
+        mSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query.length() != 0) {
+                    BoundingBox viewbox = mMap.getBoundingBox();
+                    new GeocodingTask().execute(query, viewbox);
+                    return true;
+                }
+                return false;
+            }
 
-        //Marker references arraylist
-        mMarkerArrayList = new ArrayList<>();
-
-        //Initiate Map in constructor class
-        mMap = (MapHandler) findViewById(R.id.map);
-        mMap.intializeMap(getApplicationContext(), mUserAgent);
-
-
-        BoundingBox viewbox = mMap.getBoundingBox();
-        new GeocodingTask().execute("ste-catherine, montreal", viewbox);
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
     }
+
 
     public void onResume() {
         super.onResume();
@@ -215,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         }
     }
 
+
     //add or replace the polygon overlay
     public void updateUIWithPolygon(ArrayList<GeoPoint> polygon, String name) {
         List<Overlay> mapOverlays = mMap.getOverlays();
@@ -298,6 +316,16 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
         new ReverseGeocodingTask().execute(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+    }
+
+    public void toggleDrawer(View v) {
+        if (mIsDrawerOpen) {
+            mDrawer.closeDrawer(Gravity.LEFT);
+        } else {
+            mDrawer.openDrawer(Gravity.LEFT);
+        }
+
+        mIsDrawerOpen = !mIsDrawerOpen;
     }
 
 }

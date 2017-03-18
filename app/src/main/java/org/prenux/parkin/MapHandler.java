@@ -31,7 +31,7 @@ public class MapHandler extends MapView {
     //Initializing fields
     public RotationGestureOverlay mRotationGestureOverlay;
     public final static int M_ZOOM_THRESHOLD = 14;
-    public Context mContext;
+    public MainActivity mMainActivity;
     public NominatimPOIProvider mParkingPoiProvider;
     public FolderOverlay mPoiMarkers;
     public String mUserAgent;
@@ -64,9 +64,9 @@ public class MapHandler extends MapView {
 
     }
 
-    void intializeMap(final Context ctx, String ua) {
+    void intializeMap(final MainActivity ma, String ua) {
         //Set context and user agent
-        mContext = ctx;
+        mMainActivity = ma;
         mUserAgent = ua;
 
         //Initialize map
@@ -84,17 +84,17 @@ public class MapHandler extends MapView {
         mapController.setCenter(startPoint);
 
         //Enable rotation of the map
-        mRotationGestureOverlay = new RotationGestureOverlay(this.mContext, this);
+        mRotationGestureOverlay = new RotationGestureOverlay(this.mMainActivity, this);
         mRotationGestureOverlay.setEnabled(true);
         this.getOverlays().add(this.mRotationGestureOverlay);
 
         //Set event listener overlay
-        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(mContext, (MapEventsReceiver) mContext);
+        MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(mMainActivity, mMainActivity);
         this.getOverlays().add(0, mapEventsOverlay);
 
         //Points of interests
         mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
-        mPoiMarkers = new FolderOverlay(this.mContext);
+        mPoiMarkers = new FolderOverlay(this.mMainActivity);
         this.getOverlays().add(mPoiMarkers);
 
         //Set mapHandler obj to be passed in AsyncTask
@@ -106,8 +106,8 @@ public class MapHandler extends MapView {
             public boolean onZoom(ZoomEvent arg0) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
                     ParkingPOIGettingTask ppgt = new ParkingPOIGettingTask();
-                    ppgt.setPOIattributes(mParkingPoiProvider, mPoiMarkers, MapHandler.this.mContext, mMapHandler);
-                    ppgt.execute(getBoundingBox());
+                    ppgt.setPOIattributes(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler);
+                    ppgt.execute(mMapHandler.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -117,7 +117,9 @@ public class MapHandler extends MapView {
             @Override
             public boolean onScroll(ScrollEvent arg0) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
-                    new ParkingPOIGettingTask().execute(getBoundingBox());
+                    ParkingPOIGettingTask ppgt = new ParkingPOIGettingTask();
+                    ppgt.setPOIattributes(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler);
+                    ppgt.execute(mMapHandler.getBoundingBox());
                     return true;
                 } else {
                     return false;
@@ -134,7 +136,7 @@ public class MapHandler extends MapView {
                 mPoiMarkers.remove(item);
             }
         } catch (Exception e) {
-            Toast.makeText(mContext, "Error in removing all POIs", Toast.LENGTH_LONG).show();
+            Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
     }
 }

@@ -12,10 +12,8 @@ import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Overlay;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by sugar on 3/18/17.
@@ -25,13 +23,13 @@ public class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI
 
     public NominatimPOIProvider mParkingPoiProvider;
     public FolderOverlay mPoiMarkers;
-    public Context mContext;
+    public Context mMainActivity;
     public MapHandler mMapHandler;
 
-    public void setPOIattributes(NominatimPOIProvider npp, FolderOverlay fo, Context ctx, MapHandler mapHandler) {
+    public void setPOIattributes(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
         this.mParkingPoiProvider = npp;
         this.mPoiMarkers = fo;
-        this.mContext = ctx;
+        this.mMainActivity = ma;
         this.mMapHandler = mapHandler;
     }
 
@@ -43,11 +41,11 @@ public class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI
 
     protected void onPostExecute(ArrayList<POI> pois) {
         mMapHandler.removeAllPOIs();
-        Drawable poiIcon = mContext.getResources().getDrawable(R.drawable.marker_parking);
+        Drawable poiIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking);
         try {
             for (POI poi : pois) {
                 Marker poiMarker = new Marker(mMapHandler);
-                poiMarker.setTitle(mContext.getString(R.string.offstreet_parking));
+                poiMarker.setTitle(mMainActivity.getString(R.string.offstreet_parking));
                 poiMarker.setSnippet(poi.mDescription);
                 poiMarker.setPosition(poi.mLocation);
                 poiMarker.setIcon(poiIcon);
@@ -58,7 +56,7 @@ public class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI
             }
         } catch (Exception e) {
             Log.d("ParkingPOIGettingTask", e.toString());
-            Toast.makeText(mContext, "Error in ParkingPOIGettingTask", Toast.LENGTH_LONG).show();
+            Toast.makeText(mMainActivity, "Error in ParkingPOIGettingTask", Toast.LENGTH_LONG).show();
         }
         mMapHandler.invalidate();
     }
