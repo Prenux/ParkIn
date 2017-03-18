@@ -52,19 +52,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
     private String mUserAgent = "org.prenux.parkin";
-
     private android.widget.SearchView mSearch;
-
     private ArrayList<Marker> mMarkerArrayList;
     private MapView mMap;
     private RotationGestureOverlay mRotationGestureOverlay;
-
     private NominatimPOIProvider mParkingPoiProvider;
     private FolderOverlay mPoiMarkers;
     private Polyline mPolyline;
-
     LocationManager mLocationManager;
-
     private final static int M_ZOOM_THRESHOLD = 14;
 
     @Override
