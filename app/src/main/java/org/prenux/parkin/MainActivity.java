@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private Polyline mPolyline;
     LocationManager mLocationManager;
     private final static int M_ZOOM_THRESHOLD = 14;
+    private DrawerLayout mDrawer;
+    private boolean mIsDrawerOpen;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,20 +82,21 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
 
-        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mIsDrawerOpen = false;
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView navList = (ListView) findViewById(R.id.left_drawer);
         navList.setAdapter(adapter);
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                drawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+                mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
                         super.onDrawerClosed(drawerView);
 
                     }
                 });
-                drawer.closeDrawer(navList);
+                mDrawer.closeDrawer(navList);
             }
         });
 
@@ -419,6 +423,16 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mLocationManager.requestLocationUpdates(
                 LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
         new ReverseGeocodingTask().execute(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+    }
+
+    public void toggleDrawer(View v){
+        if(mIsDrawerOpen){
+            mDrawer.closeDrawer(Gravity.LEFT);
+        } else {
+            mDrawer.openDrawer(Gravity.LEFT);
+        }
+
+        mIsDrawerOpen = !mIsDrawerOpen;
     }
 
 }

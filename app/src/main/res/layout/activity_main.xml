@@ -47,7 +47,8 @@
             android:layout_marginStart="10dp"
             android:background="@android:color/darker_gray"
             android:clickable="true"
-            app:srcCompat="@android:drawable/ic_menu_manage"/>
+            app:srcCompat="@android:drawable/ic_menu_manage"
+            android:onClick="toggleDrawer"/>
 
 
         <android.support.design.widget.FloatingActionButton
