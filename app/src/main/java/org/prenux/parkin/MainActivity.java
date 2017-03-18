@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.getOverlays().add(mPoiMarkers);
 
         BoundingBox viewbox = mMap.getBoundingBox();
-        new GeocodingTask().execute("J4B 7T9, Qc, Canada", viewbox);
+        new GeocodingTask().execute("ste-catherine, montreal", viewbox);
     }
 
     public void onResume() {
@@ -235,6 +235,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 Toast.makeText(getApplicationContext(), "Address not found.", Toast.LENGTH_SHORT).show();
             } else {
                 Address address = foundAdresses.get(0); //get first address
+                //Log.i("DEBUG",Integer.toString(foundAdresses.size()));
                 String addressDisplayName = address.getExtras().getString("display_name");
                 GeoPoint destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
                 //Marker markerDestination = new Marker(mMap);
@@ -243,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                 Bundle extras = address.getExtras();
                 if (extras != null && extras.containsKey("polygonpoints")) {
                     ArrayList<GeoPoint> polygon = extras.getParcelableArrayList("polygonpoints");
-                    //Log.d("DEBUG", "polygon:"+polygon.size());
+                    //Log.i("DEBUG", "polygon:"+polygon.size());
                     updateUIWithPolygon(polygon, addressDisplayName);
                 } else {
                     updateUIWithPolygon(null, "");
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             location = mapOverlays.indexOf(mPolyline);
         mPolyline = new Polyline();
         mPolyline.setColor(0x800000FF);
-        mPolyline.setWidth(5.0f);
+        mPolyline.setWidth(10.0f);
         mPolyline.setTitle(name);
         BoundingBox bb = null;
         if (polygon != null) {
