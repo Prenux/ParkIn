@@ -1,59 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    tools:context="org.prenux.parkin.MainActivity">
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <org.osmdroid.views.MapView
-        android:id="@+id/map"
+    <!-- The main content view -->
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_main"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        tilesource="Mapnik"/>
+        android:orientation="vertical"
+        tools:context="org.prenux.parkin.MainActivity">
 
-    <SearchView
-        android:id="@+id/searchbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_toEndOf="@+id/drawer_button"
-        android:layout_toRightOf="@+id/drawer_button"
-        android:background="@android:color/darker_gray"
-        android:iconifiedByDefault="false"
-        android:queryHint="@string/searchView_hint" />
+        <org.osmdroid.views.MapView
+            android:id="@+id/map"
+            tilesource="Mapnik"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"/>
 
-    <org.prenux.parkin.HgSquareFloatButton
-        android:id="@+id/drawer_button"
-        android:layout_width="30dp"
-        android:layout_height="10dp"
-        android:layout_alignBottom="@id/searchbar"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignTop="@+id/searchbar"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="10dp"
-        android:background="@android:color/darker_gray"
-        android:clickable="true"
-        app:srcCompat="@android:drawable/ic_menu_manage" />
+        <SearchView
+            android:id="@+id/searchbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/drawer_button"
+            android:layout_toRightOf="@+id/drawer_button"
+            android:background="@android:color/darker_gray"
+            android:iconifiedByDefault="false"
+            android:queryHint="@string/searchView_hint"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/locationFloatingActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:layout_marginRight="15dp"
-        android:clickable="true"
-        android:src="@drawable/ic_menu_mylocation"
-        app:fabSize="mini"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/searchbar"
-        android:layout_alignEnd="@+id/searchbar"
-        android:layout_marginEnd="15dp"
-        android:onClick="getPosition"/>
+        <org.prenux.parkin.HgSquareFloatButton
+            android:id="@+id/drawer_button"
+            android:layout_width="30dp"
+            android:layout_height="10dp"
+            android:layout_alignBottom="@id/searchbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/searchbar"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:background="@android:color/darker_gray"
+            android:clickable="true"
+            app:srcCompat="@android:drawable/ic_menu_manage"/>
 
-</RelativeLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/locationFloatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/searchbar"
+            android:layout_alignParentBottom="true"
+            android:layout_alignRight="@+id/searchbar"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginRight="15dp"
+            android:clickable="true"
+            android:onClick="getPosition"
+            android:src="@drawable/ic_menu_mylocation"
+            app:fabSize="mini"/>
+
+    </RelativeLayout>
+
+    <!-- The navigation drawer -->
+    <ListView
+        android:id="@+id/left_drawer"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#111"
+        android:choiceMode="singleChoice"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"/>
+</android.support.v4.widget.DrawerLayout>
+
