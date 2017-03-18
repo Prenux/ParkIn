@@ -16,10 +16,14 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -51,6 +55,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
+    //Test drawer
+    final String[] data = {"one", "two", "three"};
+
     private String mUserAgent = "org.prenux.parkin";
     private android.widget.SearchView mSearch;
     private ArrayList<Marker> mMarkerArrayList;
@@ -69,6 +76,25 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
+
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final ListView navList = (ListView) findViewById(R.id.left_drawer);
+        navList.setAdapter(adapter);
+        navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
+                drawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+                    @Override
+                    public void onDrawerClosed(View drawerView) {
+                        super.onDrawerClosed(drawerView);
+
+                    }
+                });
+                drawer.closeDrawer(navList);
+            }
+        });
 
         //GPS Postion things
         mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -286,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     // ------------------------------------- POI ---------------------------------------------------
-    //Async task to get POIs near a geopoint
+//Async task to get POIs near a geopoint
     private class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
         protected ArrayList<POI> doInBackground(Object... params) {
@@ -316,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             }
             mMap.invalidate();
         }
+
     }
 
     //Remove all POI markers
