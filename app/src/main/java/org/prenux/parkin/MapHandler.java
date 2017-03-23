@@ -18,16 +18,13 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Created by sugar on 3/18/17.
- */
 
 class MapHandler extends MapView {
     //Initializing fields
@@ -39,6 +36,7 @@ class MapHandler extends MapView {
     String mUserAgent;
     MapHandler mMapHandler;
     Polyline mPolyline;
+    ArrayList<Marker> mMarkerArrayList;
 
     MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -80,6 +78,9 @@ class MapHandler extends MapView {
         //Set mapHandler obj to be passed in AsyncTask
         mMapHandler = this;
 
+        //Marker references arraylist
+        mMarkerArrayList = new ArrayList<>();
+
         //Set scroll and zoom event actions to update POI
         this.setMapListener(new DelayedMapListener(new MapListener() {
             @Override
@@ -116,6 +117,15 @@ class MapHandler extends MapView {
         } catch (Exception e) {
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
+    }
+
+    //Remove all user placed markers
+    void removeAllMarkers() {
+        for (Marker marker : mMarkerArrayList) {
+            marker.remove(this);
+        }
+        mMarkerArrayList.clear();
+        this.invalidate();
     }
 
     void setViewOn(BoundingBox bb) {

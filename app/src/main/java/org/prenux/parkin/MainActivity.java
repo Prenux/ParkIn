@@ -1,8 +1,8 @@
 package org.prenux.parkin;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteCursor;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteCursor;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,13 +23,10 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
-import java.util.ArrayList;
-
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
     public String mUserAgent = "org.prenux.parkin";
-    private ArrayList<Marker> mMarkerArrayList;
     private MapHandler mMap;
     LocationManager mLocationManager;
     GeocodingHandler mGeoHandler;
@@ -51,9 +48,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Main Activity reference
         mMainActivity = this;
 
-        //Marker references arraylist
-        mMarkerArrayList = new ArrayList<>();
-
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
         mMap.intializeMap(mMainActivity, mUserAgent);
@@ -73,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
                     @Override
                     public void onDrawerClosed(View drawerView) {
                         super.onDrawerClosed(drawerView);
-
                     }
                 });
                 mDrawer.closeDrawer(navList);
@@ -105,15 +98,17 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             }
         });
 
-        database = new SuggestionsDatabase( this);
-        search.setOnSuggestionListener( new SearchView.OnSuggestionListener(){
+        database = new SuggestionsDatabase(this);
+        search.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
             @Override
-            public boolean onSuggestionSelect(int position) {return false;}
+            public boolean onSuggestionSelect(int position) {
+                return false;
+            }
 
             @Override
             public boolean onSuggestionClick(int position) {
                 SQLiteCursor cursor = (SQLiteCursor) search.getSuggestionsAdapter().getItem(position);
-                int indexColumnSuggestion = cursor.getColumnIndex( SuggestionsDatabase.FIELD_SUGGESTION);
+                int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.FIELD_SUGGESTION);
 
                 search.setQuery(cursor.getString(indexColumnSuggestion), false);
 
@@ -138,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public boolean singleTapConfirmedHelper(GeoPoint p) {
         Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
         InfoWindow.closeAllInfoWindowsOn(mMap);
-        removeAllMarkers();
+        mMap.removeAllMarkers();
         mMap.removeAllPOIs();
         return true;
     }
@@ -148,20 +143,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Marker pressedMarker = new Marker(mMap);
         pressedMarker.setPosition(p);
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mMarkerArrayList.add(pressedMarker);
+        mMap.mMarkerArrayList.add(pressedMarker);
         mMap.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask(mGeoHandler, mMap).execute(pressedMarker);
         return true;
     }
 
-    //Remove all user placed markers
-    private void removeAllMarkers() {
-        for (Marker marker : mMarkerArrayList) {
-            marker.remove(mMap);
-        }
-        mMarkerArrayList.clear();
-        mMap.invalidate();
-    }
 
     public void toggleDrawer(View v) {
         if (mIsDrawerOpen) {
@@ -173,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mIsDrawerOpen = !mIsDrawerOpen;
     }
 
+    //Called from location button in layout with onClick attribute
     public void getPosition(View v) {
         mGeoHandler.getPosition();
     }
