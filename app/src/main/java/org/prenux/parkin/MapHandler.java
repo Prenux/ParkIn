@@ -2,6 +2,7 @@ package org.prenux.parkin;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -111,10 +112,12 @@ class MapHandler extends MapView {
     void removeAllPOIs() {
         try {
             List<Overlay> overlays = mPoiMarkers.getItems();
-            for (Overlay item : overlays) {
-                mPoiMarkers.remove(item);
+            int size = overlays.size();
+            for (int i = 0; i < size; i++) {
+                overlays.remove(0);
             }
         } catch (Exception e) {
+            Log.d("DEBUG",e.toString());
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
     }
