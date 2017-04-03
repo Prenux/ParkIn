@@ -6,21 +6,21 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.location.GeocoderNominatim;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.Marker;
 
 import java.io.IOException;
 import java.util.List;
-
-/**
- * Created by sugar on 3/18/17.
- */
 
 class GeocodingHandler {
     LocationManager mLocationManager;
@@ -84,24 +84,58 @@ class GeocodingHandler {
             alertDialog.show();
             return;
         }
-
-        //if location services are enabled
+        Log.d("DEBUG", "Verify if permissons granted");
+        //if location services are disabled
         if (ActivityCompat.checkSelfPermission(mMainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(mMainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            //TODO : POP ERROR MESSAGE
+            Log.d("DEBUG", "Permissions DENIED");
+            ActivityCompat.requestPermissions(mMainActivity, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 123);
             return;
         }
-        mLocationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER, 5000, 10, mLocationListener);
-        new ReverseGeocodingTask(this, mMapHandler).execute(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+        Log.d("DEBUG", "Permissions GRANTED");
+        Location netLocation = null;
+        Location gpsLocation = null;
+
+        //Network Position
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2,2, mLocationListener);
+        Log.d("DEBUG", "Network Position");
+        if (mLocationManager != null) {
+            netLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+        //GPS Position
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2, 2, mLocationListener);
+        Log.d("DEBUG", "GPS Position");
+        if (mLocationManager != null) gpsLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        Marker locationMarker = new Marker(mMapHandler);
+        mMapHandler.mMarkerArrayList.add(locationMarker);
+        mMapHandler.getOverlays().add(locationMarker);
+        if(gpsLocation != null) {
+            try {
+                locationMarker.setPosition(new GeoPoint(gpsLocation));
+                locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                new ReverseGeocodingTask(this, mMapHandler).execute(locationMarker);
+                mMapHandler.getController().setCenter(new GeoPoint(gpsLocation));
+            } catch (Exception e) {
+                e.printStackTrace();
+                mMapHandler.mMarkerArrayList.remove(locationMarker);
+            }
+        } else if (netLocation != null){
+            try {
+                locationMarker.setPosition(new GeoPoint(netLocation));
+                locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                new ReverseGeocodingTask(this, mMapHandler).execute(locationMarker);
+                mMapHandler.getController().setCenter(new GeoPoint(netLocation));
+            } catch (Exception e) {
+                e.printStackTrace();
+                mMapHandler.mMarkerArrayList.remove(locationMarker);
+            }
+        mMapHandler.invalidate();
+        }
+
     }
 
 

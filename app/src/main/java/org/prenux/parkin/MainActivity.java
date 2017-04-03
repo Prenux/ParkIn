@@ -1,5 +1,6 @@
 package org.prenux.parkin;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -33,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private DrawerLayout mDrawer;
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
-
+    NotificationManager mNotificationManager;
     private SuggestionsDatabase database;
 
 
@@ -73,8 +75,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             }
         });
 
+        //Notifications things
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
         //GPS Postion things
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
 
         //Search things
@@ -162,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     //Called from location button in layout with onClick attribute
     public void getPosition(View v) {
+        Log.d("DEBUG", "getposition called");
         mGeoHandler.getPosition();
     }
 }
