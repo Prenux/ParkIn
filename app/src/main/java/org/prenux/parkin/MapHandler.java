@@ -38,6 +38,7 @@ class MapHandler extends MapView {
     MapHandler mMapHandler;
     Polyline mPolyline;
     ArrayList<Marker> mMarkerArrayList;
+    public boolean mOffStreet;
 
     MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -55,6 +56,7 @@ class MapHandler extends MapView {
         this.setMaxZoomLevel(18);
         this.setMinZoomLevel(2);
         this.setTilesScaledToDpi(true);
+        mOffStreet = true;
 
         //Set default view point
         IMapController mapController = this.getController();
@@ -86,7 +88,7 @@ class MapHandler extends MapView {
         this.setMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onZoom(ZoomEvent arg0) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
                     return true;
@@ -97,7 +99,7 @@ class MapHandler extends MapView {
 
             @Override
             public boolean onScroll(ScrollEvent arg0) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
                     return true;

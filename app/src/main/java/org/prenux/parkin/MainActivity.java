@@ -12,8 +12,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -25,11 +28,13 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
     public String mUserAgent = "org.prenux.parkin";
-    private MapHandler mMap;
+    public MapHandler mMap;
     LocationManager mLocationManager;
     GeocodingHandler mGeoHandler;
     private DrawerLayout mDrawer;
@@ -37,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
     private SuggestionsDatabase database;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,8 +59,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.intializeMap(mMainActivity, mUserAgent);
 
         Resources res = getResources();
-        String[] drawerItems = res.getStringArray(R.array.drawer_options);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(mMainActivity, android.R.layout.simple_list_item_1, drawerItems);
+        String[] strDrawerItems = res.getStringArray(R.array.drawer_options);
+        ArrayList<MyDrawerItem> drawerItems = new ArrayList<>();
+        for(String s : strDrawerItems){
+            drawerItems.add(new MyDrawerItem(s));
+        }
+
+        MyDrawerAdapter adapter = new MyDrawerAdapter(this, drawerItems, mMap);
 
         mIsDrawerOpen = false;
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -65,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
+                Toast.makeText(getApplicationContext(), "" + Integer.toString(pos), Toast.LENGTH_SHORT).show();
+
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
@@ -136,8 +147,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     // ------------------------------ Map events ---------------------------------------
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
-        Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
-        InfoWindow.closeAllInfoWindowsOn(mMap);
+        //Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
+        //InfoWindow.closeAllInfoWindowsOn(mMap);
         mMap.removeAllMarkers();
         mMap.removeAllPOIs();
         return true;
