@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMainActivity = this;
 
         //database
-         mDbHelper=  new ParkinDbHelper(ctx);
-        mDbHelper.importFile("test.csv",mDbHelper.db);
+        mDbHelper=  new ParkinDbHelper(ctx);
+        //mDbHelper.importFile("test.csv",mDbHelper.db);
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
 

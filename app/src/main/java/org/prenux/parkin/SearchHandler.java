@@ -37,7 +37,7 @@ public class SearchHandler extends SearchRecentSuggestionsProvider {
         //Retrieve saved searches
         int i = 0;
         for (String s : set) {
-            if (s.length() > 0)
+            if (s != null && s.length() > 0)
                 mSearchHistory[i++ % MAX_HISTORY_RESULTS] = s;
         }
     }
@@ -85,7 +85,7 @@ public class SearchHandler extends SearchRecentSuggestionsProvider {
     public HashSet<String> getSearchHistory() {
         HashSet<String> set = new HashSet<>();
         for (String s : mSearchHistory) {
-            if (s.length() > 0)
+            if (s != null && s.length() > 0)
                 set.add(s);
         }
         return set;
