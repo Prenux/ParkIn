@@ -56,7 +56,6 @@ class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
             }
         } catch (Exception e) {
             Log.d("ParkingPOIGettingTask", e.toString());
-            Toast.makeText(mMainActivity, "Error in ParkingPOIGettingTask", Toast.LENGTH_LONG).show();
         }
         mMapHandler.invalidate();
     }

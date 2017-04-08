@@ -9,9 +9,15 @@ import android.os.Bundle;
  */
 
 class myLocationListener implements LocationListener {
+    GeocodingHandler gh;
+
+    public myLocationListener(GeocodingHandler gh){
+        this.gh = gh;
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        
+        gh.getPosition();
     }
 
     @Override
