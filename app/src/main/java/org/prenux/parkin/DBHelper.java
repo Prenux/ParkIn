@@ -14,7 +14,8 @@ import java.util.Collections;
 
 class DBHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "Data.db";
+    private static final String
+            DATABASE_NAME = "Data.db";
     private static final String SPENDING_TABLE_NAME = "SPENDING";
     private static final String SPENDING_COLUMN_ID = "id";
     private static final String SPENDING_COLUMN_CATID = "catid";
