@@ -31,6 +31,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public float INIT_LATITUDE = (float) 45.500997;
     public float INIT_LONGITUDE = (float) -73.615783;
 
+    public SearchHandler mSearch;
     public String mUserAgent = "org.prenux.parkin";
     public MapHandler mMap;
     LocationManager mLocationManager;
@@ -47,7 +49,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
-    private SuggestionsDatabase database;
+
+    public ListView mLV;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
 
-        //If preference values exist use them, else use default values
+        //If saved localization exist, use it, else use default values
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         mMap.intializeMap(mMainActivity, mUserAgent,
                 sharedPref.getFloat("latitude", INIT_LATITUDE),
@@ -104,44 +107,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
 
-        //Search things
-        final SearchView search = (SearchView) findViewById(R.id.searchbar);
-        search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                long result = database.insertSuggestion(query);
-
-                if (query.length() != 0) {
-                    BoundingBox viewbox = mMap.getBoundingBox();
-                    new GeocodingTask(mUserAgent, mMainActivity, mMap).execute(query, viewbox);
-                    return result != -1;
-                }
-                return result != -1;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
-
-        database = new SuggestionsDatabase(this);
-        search.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
-            @Override
-            public boolean onSuggestionSelect(int position) {
-                return false;
-            }
-
-            @Override
-            public boolean onSuggestionClick(int position) {
-                SQLiteCursor cursor = (SQLiteCursor) search.getSuggestionsAdapter().getItem(position);
-                int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.FIELD_SUGGESTION);
-
-                search.setQuery(cursor.getString(indexColumnSuggestion), false);
-
-                return true;
-            }
-        });
+        //Initialize SearchHandler
+        mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
+                mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
+        mSearch.init();
 
     }
 
@@ -156,13 +125,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     @Override
     protected void onPause() {
-        // Save center of map to restore session when user reopens the app
         super.onPause();
-        GeoPoint mSavedPosition = (GeoPoint) mMap.getMapCenter();
+        GeoPoint mSavedPosition = (GeoPoint) mMap.getMapCenter(); //save map center on app close/pause
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putFloat("latitude", (float) mSavedPosition.getLatitude());
         editor.putFloat("longitude", (float) mSavedPosition.getLongitude());
+        editor.putStringSet("search", mSearch.getSearchHistory()); //save search history on app close/pause
         editor.commit();
     }
 

@@ -37,6 +37,11 @@
             android:iconifiedByDefault="false"
             android:queryHint="@string/searchView_hint"/>
 
+        <ListView
+            android:id="@+id/searchListView"
+            android:layout_width="wrap_content"
+            android:layout_heigth="wrap_content"/>
+
         <org.prenux.parkin.HgSquareFloatButton
             android:id="@+id/drawer_button"
             android:layout_width="wrap_content"
