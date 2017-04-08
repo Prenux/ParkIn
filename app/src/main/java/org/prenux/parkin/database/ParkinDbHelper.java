@@ -18,7 +18,7 @@ import static android.content.ContentValues.TAG;
 public class ParkinDbHelper extends SQLiteOpenHelper {
     private static final int VERSION = 1;
     private static final String DATABASE_NAME = "parkinBase.db";
-    private SQLiteDatabase db;
+    public  SQLiteDatabase db;
     private Context ctx;
     public String fileName = "test.csv";
 
@@ -27,7 +27,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
         super(context, DATABASE_NAME, null, VERSION);
         ctx = context;
-
+        db = this.getWritableDatabase();
 
     }
 
@@ -46,82 +46,85 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                 ")"
         );
 
-        Log.d("end","whatever");
     }
 
 
-//    public void importFile(String fileName, SQLiteDatabase db)  {
-//
-//
-//
-//        try {
-//            InputStream inStream = ctx.getResources().getAssets().open("test.csv");
-//            Log.i("CSV", inStream.toString());
-//            BufferedReader buffer = new BufferedReader(new InputStreamReader(inStream));
-//            String line = "";
-//            db.beginTransaction();
-//
-//
-//                while ((line = buffer.readLine()) != null) {
-//                    String[] columns = line.split(",");
-//                    if (columns.length != 7) {
-//                        Log.d("CSVParser", "Skipping Bad CSV Row : " + columns.length);
-//                        continue;
-//                    }
-//                    ContentValues cv = new ContentValues();
-//                    cv.put(ParkinTable.Cols.ID, columns[0].trim());
-//                    cv.put(ParkinTable.Cols.Longtitude, columns[1].trim());
-//                    cv.put(ParkinTable.Cols.Magnetude, columns[2].trim());
-//                    cv.put(ParkinTable.Cols.LongtitudeC, columns[3].trim());
-//                    cv.put(ParkinTable.Cols.MagnetudeC, columns[4].trim());
-//                    cv.put(ParkinTable.Cols.Rue, columns[5].trim());
-//                    cv.put(ParkinTable.Cols.Tarif, columns[6].trim());
-    // // put data in key value
-//                    db.insert(ParkinTable.Name, null, cv);
-//               }
-//            }
-//            catch (IOException e) {
-//                e.printStackTrace();
-//                Log.d("Exception", "kjnsjv");
-//            }
-//
-//            // db.setTransactionSuccessful();
-//            db.endTransaction();
-//
-//            Log.d("CSV", "Fin");
-//
-//
+       public void importFile(String fileName, SQLiteDatabase db) {
 
 
+           try {
+               InputStream inStream = ctx.getResources().getAssets().open("test");
+               Log.d("CSV", "in try");
+               BufferedReader buffer = new BufferedReader(new InputStreamReader(inStream));
+               String line = "";
+               db.beginTransaction();
+               Log.d("CSV", "in transaction");
+
+
+               while ((line = buffer.readLine()) != null) {
+                   String[] columns = line.split(",");
+                   Log.d("CSV", "in while");
+
+
+                   if (columns.length != 7) {
+                       Log.d("CSVParser", "Skipping Bad CSV Row : " + columns.length);
+                       continue;
+                   }
+                   ContentValues cv = new ContentValues();
+                   cv.put(ParkinTable.Cols.ID, columns[0].trim());
+                   cv.put(ParkinTable.Cols.Longtitude, columns[1].trim());
+                   cv.put(ParkinTable.Cols.Magnetude, columns[2].trim());
+                   cv.put(ParkinTable.Cols.LongtitudeC, columns[3].trim());
+                   cv.put(ParkinTable.Cols.MagnetudeC, columns[4].trim());
+                   cv.put(ParkinTable.Cols.Rue, columns[5].trim());
+                   cv.put(ParkinTable.Cols.Tarif, columns[6].trim());
+                   // put data in key value
+                   db.insert(ParkinTable.NAME, null, cv);
+                   Log.d("CSV", "end while");
+               }
+               Log.d("CSV", "after a  while");
+               db.setTransactionSuccessful();
+           } catch (IOException e) {
+               e.printStackTrace();
+               Log.d("Exception", e.toString());
+           }
+
+           db.endTransaction();
+
+           Log.d("CSV", "Fin");
+
+       }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade (SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " +ParkinTable.NAME);
+        onCreate(db);
 
         }
 
 
 
 //
-//    public void  getValueById(String id){
-//        Cursor cursor=null;
-//        String [] information=new String[7]; // a changer
-//
-//        try{
-//            cursor = db.rawQuery("SELECT id FROM Reglementation WHERE id=" , new String[] {id + ""});  // ..id=" + id ne marchait pas
-//
-//
-//        if(cursor.getCount() > 0) {
-//            cursor.moveToFirst();
-//            for (int i = 0; i < 8; i++) { //SUPER NOOB :)
-//                information[i] = cursor.getString(cursor.getColumnIndex(id) + i); //
-//            }
-//        }
-//        new  Reglement(information);
-//    }
-//    finally {
-//        cursor.close();
-//    }
-//}
+    public void  getValueById(String id){
+        Cursor cursor=null;
+        String [] information=new String[7]; // a changer
+
+        try{
+            cursor = db.rawQuery("SELECT id FROM Reglementation WHERE id=" , new String[] {id + ""});  // ..id=" + id ne marchait pas
+
+
+        if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            for (int i = 0; i < 8; i++) { //SUPER NOOB :)
+                information[i] = cursor.getString(cursor.getColumnIndex(id) + i); //
+            }
+        }
+        new  Reglement(information);
+    }
+    finally {
+        cursor.close();
+    }
+}
 
 
     }

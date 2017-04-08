@@ -27,6 +27,7 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
+import org.prenux.parkin.database.ParkinDbHelper;
 
 import java.util.ArrayList;
 
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
     private SuggestionsDatabase database;
+    ParkinDbHelper mDbHelper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Main Activity reference
         mMainActivity = this;
 
+        //database
+         mDbHelper=  new ParkinDbHelper(ctx);
+        mDbHelper.importFile("test.csv",mDbHelper.db);
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
         mMap.intializeMap(mMainActivity, mUserAgent);
