@@ -120,6 +120,7 @@ class MapHandler extends MapView {
             }
         } catch (Exception e) {
             Log.d("DEBUG",e.toString());
+
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
     }
@@ -130,6 +131,7 @@ class MapHandler extends MapView {
             marker.remove(this);
         }
         mMarkerArrayList.clear();
+        mMainActivity.mGeoHandler.mLocationMarker = null;
         this.invalidate();
     }
 

@@ -172,7 +172,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         } else {
             mDrawer.openDrawer(Gravity.LEFT);
         }
-
         mIsDrawerOpen = !mIsDrawerOpen;
     }
 
