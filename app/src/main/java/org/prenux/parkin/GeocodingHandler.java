@@ -28,13 +28,15 @@ class GeocodingHandler {
     MainActivity mMainActivity;
     MapHandler mMapHandler;
     LocationListener mLocationListener;
+    Marker mLocationMarker;
 
     GeocodingHandler(LocationManager lm, String ua, MainActivity ma, MapHandler mh) {
         mLocationManager = lm;
         mUserAgent = ua;
         mMainActivity = ma;
         mMapHandler = mh;
-        mLocationListener = new myLocationListener();
+        mLocationListener = new myLocationListener(this);
+        mLocationMarker = null;
     }
 
     String getAddressFromGeoPoint(GeoPoint p) {
@@ -109,29 +111,32 @@ class GeocodingHandler {
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2, 2, mLocationListener);
         Log.d("DEBUG", "GPS Position");
         if (mLocationManager != null) gpsLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        //If Marker not intialized yet
+        if (mLocationMarker == null){
+            mLocationMarker = new Marker(mMapHandler);
+            mMapHandler.mMarkerArrayList.add(mLocationMarker);
+            mMapHandler.getOverlays().add(mLocationMarker);
+        }
 
-        Marker locationMarker = new Marker(mMapHandler);
-        mMapHandler.mMarkerArrayList.add(locationMarker);
-        mMapHandler.getOverlays().add(locationMarker);
         if(gpsLocation != null) {
             try {
-                locationMarker.setPosition(new GeoPoint(gpsLocation));
-                locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                new ReverseGeocodingTask(this, mMapHandler).execute(locationMarker);
+                mLocationMarker.setPosition(new GeoPoint(gpsLocation));
+                mLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                new ReverseGeocodingTask(this, mMapHandler).execute(mLocationMarker);
                 mMapHandler.getController().setCenter(new GeoPoint(gpsLocation));
             } catch (Exception e) {
                 e.printStackTrace();
-                mMapHandler.mMarkerArrayList.remove(locationMarker);
+                mMapHandler.mMarkerArrayList.remove(mLocationMarker);
             }
         } else if (netLocation != null){
             try {
-                locationMarker.setPosition(new GeoPoint(netLocation));
-                locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                new ReverseGeocodingTask(this, mMapHandler).execute(locationMarker);
+                mLocationMarker.setPosition(new GeoPoint(netLocation));
+                mLocationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                new ReverseGeocodingTask(this, mMapHandler).execute(mLocationMarker);
                 mMapHandler.getController().setCenter(new GeoPoint(netLocation));
             } catch (Exception e) {
                 e.printStackTrace();
-                mMapHandler.mMarkerArrayList.remove(locationMarker);
+                mMapHandler.mMarkerArrayList.remove(mLocationMarker);
             }
         mMapHandler.invalidate();
         }
