@@ -20,7 +20,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "parkinBase.db";
     public  SQLiteDatabase db;
     private Context ctx;
-    public String fileName = "test.csv";
+    public String fileName = "places.csv";
 
 
     public ParkinDbHelper(Context context) {
@@ -39,12 +39,14 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                 ParkinTable.Cols.ID + ", " +
                 ParkinTable.Cols.Longtitude + ", " +
                 ParkinTable.Cols.Magnetude + ", " +
-                ParkinTable.Cols.LongtitudeC + ", " +
-                ParkinTable.Cols.MagnetudeC + ", " +
-                ParkinTable.Cols.Rue + ", " +
+               // ParkinTable.Cols.LongtitudeC + ", " +
+               // ParkinTable.Cols.MagnetudeC + ", " +
+               // ParkinTable.Cols.Rue + ", " +
                 ParkinTable.Cols.Tarif +
                 ")"
         );
+
+
 
     }
 
@@ -53,7 +55,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
 
            try {
-               InputStream inStream = ctx.getResources().getAssets().open("test");
+               InputStream inStream = ctx.getResources().getAssets().open("places.csv");
                Log.d("CSV", "in try");
                BufferedReader buffer = new BufferedReader(new InputStreamReader(inStream));
                String line = "";
@@ -66,7 +68,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                    Log.d("CSV", "in while");
 
 
-                   if (columns.length != 7) {
+                   if (columns.length != 4) {
                        Log.d("CSVParser", "Skipping Bad CSV Row : " + columns.length);
                        continue;
                    }
@@ -74,10 +76,10 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                    cv.put(ParkinTable.Cols.ID, columns[0].trim());
                    cv.put(ParkinTable.Cols.Longtitude, columns[1].trim());
                    cv.put(ParkinTable.Cols.Magnetude, columns[2].trim());
-                   cv.put(ParkinTable.Cols.LongtitudeC, columns[3].trim());
-                   cv.put(ParkinTable.Cols.MagnetudeC, columns[4].trim());
-                   cv.put(ParkinTable.Cols.Rue, columns[5].trim());
-                   cv.put(ParkinTable.Cols.Tarif, columns[6].trim());
+                  // cv.put(ParkinTable.Cols.LongtitudeC, columns[3].trim());
+                  // cv.put(ParkinTable.Cols.MagnetudeC, columns[4].trim());
+                  // cv.put(ParkinTable.Cols.Rue, columns[5].trim());
+                   cv.put(ParkinTable.Cols.Tarif, columns[3].trim());
                    // put data in key value
                    db.insert(ParkinTable.NAME, null, cv);
                    Log.d("CSV", "end while");
