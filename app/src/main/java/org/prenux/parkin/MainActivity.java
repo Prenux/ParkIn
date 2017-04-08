@@ -94,8 +94,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                Toast.makeText(getApplicationContext(), "" + Integer.toString(pos), Toast.LENGTH_SHORT).show();
-
+                mDbHelper.importFile("test");
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
