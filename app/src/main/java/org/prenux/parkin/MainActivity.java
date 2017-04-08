@@ -1,17 +1,22 @@
 package org.prenux.parkin;
 
+import android.app.NotificationManager;
 import android.content.Context;
-import android.database.sqlite.SQLiteCursor;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteCursor;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -29,16 +34,14 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
     public String mUserAgent = "org.prenux.parkin";
-    private ArrayList<Marker> mMarkerArrayList;
-    private MapHandler mMap;
+    public MapHandler mMap;
     LocationManager mLocationManager;
     GeocodingHandler mGeoHandler;
     private DrawerLayout mDrawer;
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
-
+    NotificationManager mNotificationManager;
     private SuggestionsDatabase database;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,16 +54,18 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Main Activity reference
         mMainActivity = this;
 
-        //Marker references arraylist
-        mMarkerArrayList = new ArrayList<>();
-
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
         mMap.intializeMap(mMainActivity, mUserAgent);
 
         Resources res = getResources();
-        String[] drawerItems = res.getStringArray(R.array.drawer_options);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(mMainActivity, android.R.layout.simple_list_item_1, drawerItems);
+        String[] strDrawerItems = res.getStringArray(R.array.drawer_options);
+        ArrayList<MyDrawerItem> drawerItems = new ArrayList<>();
+        for(String s : strDrawerItems){
+            drawerItems.add(new MyDrawerItem(s));
+        }
+
+        MyDrawerAdapter adapter = new MyDrawerAdapter(this, drawerItems, mMap);
 
         mIsDrawerOpen = false;
         mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -69,19 +74,23 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
+                Toast.makeText(getApplicationContext(), "" + Integer.toString(pos), Toast.LENGTH_SHORT).show();
+
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
                         super.onDrawerClosed(drawerView);
-
                     }
                 });
                 mDrawer.closeDrawer(navList);
             }
         });
 
+        //Notifications things
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
         //GPS Postion things
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
 
         //Search things
@@ -105,15 +114,17 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             }
         });
 
-        database = new SuggestionsDatabase( this);
-        search.setOnSuggestionListener( new SearchView.OnSuggestionListener(){
+        database = new SuggestionsDatabase(this);
+        search.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
             @Override
-            public boolean onSuggestionSelect(int position) {return false;}
+            public boolean onSuggestionSelect(int position) {
+                return false;
+            }
 
             @Override
             public boolean onSuggestionClick(int position) {
                 SQLiteCursor cursor = (SQLiteCursor) search.getSuggestionsAdapter().getItem(position);
-                int indexColumnSuggestion = cursor.getColumnIndex( SuggestionsDatabase.FIELD_SUGGESTION);
+                int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.FIELD_SUGGESTION);
 
                 search.setQuery(cursor.getString(indexColumnSuggestion), false);
 
@@ -136,9 +147,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     // ------------------------------ Map events ---------------------------------------
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
-        Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
-        InfoWindow.closeAllInfoWindowsOn(mMap);
-        removeAllMarkers();
+        //Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
+        //InfoWindow.closeAllInfoWindowsOn(mMap);
+        mMap.removeAllMarkers();
         mMap.removeAllPOIs();
         return true;
     }
@@ -148,20 +159,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Marker pressedMarker = new Marker(mMap);
         pressedMarker.setPosition(p);
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-        mMarkerArrayList.add(pressedMarker);
+        mMap.mMarkerArrayList.add(pressedMarker);
         mMap.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask(mGeoHandler, mMap).execute(pressedMarker);
         return true;
     }
 
-    //Remove all user placed markers
-    private void removeAllMarkers() {
-        for (Marker marker : mMarkerArrayList) {
-            marker.remove(mMap);
-        }
-        mMarkerArrayList.clear();
-        mMap.invalidate();
-    }
 
     public void toggleDrawer(View v) {
         if (mIsDrawerOpen) {
@@ -173,7 +176,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mIsDrawerOpen = !mIsDrawerOpen;
     }
 
+    //Called from location button in layout with onClick attribute
     public void getPosition(View v) {
+        Log.d("DEBUG", "getposition called");
         mGeoHandler.getPosition();
     }
 }

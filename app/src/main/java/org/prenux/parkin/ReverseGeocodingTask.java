@@ -4,10 +4,6 @@ import android.os.AsyncTask;
 
 import org.osmdroid.views.overlay.Marker;
 
-/**
- * Created by sugar on 3/18/17.
- */
-
 //Async task to reverse-geocode the marker position in a separate thread:
 class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     Marker marker;
@@ -25,8 +21,8 @@ class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     }
 
     protected void onPostExecute(String result) {
-        marker.setTitle(result);
-        //marker.showInfoWindow();
+        marker.setSnippet(result);
+        marker.showInfoWindow();
         mMapHandler.invalidate();
     }
 }

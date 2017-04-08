@@ -2,6 +2,7 @@ package org.prenux.parkin;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -18,16 +19,13 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Created by sugar on 3/18/17.
- */
 
 class MapHandler extends MapView {
     //Initializing fields
@@ -39,6 +37,8 @@ class MapHandler extends MapView {
     String mUserAgent;
     MapHandler mMapHandler;
     Polyline mPolyline;
+    ArrayList<Marker> mMarkerArrayList;
+    public boolean mOffStreet;
 
     MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -56,6 +56,7 @@ class MapHandler extends MapView {
         this.setMaxZoomLevel(18);
         this.setMinZoomLevel(2);
         this.setTilesScaledToDpi(true);
+        mOffStreet = true;
 
         //Set default view point
         IMapController mapController = this.getController();
@@ -80,11 +81,14 @@ class MapHandler extends MapView {
         //Set mapHandler obj to be passed in AsyncTask
         mMapHandler = this;
 
+        //Marker references arraylist
+        mMarkerArrayList = new ArrayList<>();
+
         //Set scroll and zoom event actions to update POI
         this.setMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onZoom(ZoomEvent arg0) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
                     return true;
@@ -95,7 +99,7 @@ class MapHandler extends MapView {
 
             @Override
             public boolean onScroll(ScrollEvent arg0) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
                     return true;
@@ -110,12 +114,23 @@ class MapHandler extends MapView {
     void removeAllPOIs() {
         try {
             List<Overlay> overlays = mPoiMarkers.getItems();
-            for (Overlay item : overlays) {
-                mPoiMarkers.remove(item);
+            int size = overlays.size();
+            for (int i = 0; i < size; i++) {
+                overlays.remove(0);
             }
         } catch (Exception e) {
+            Log.d("DEBUG",e.toString());
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
+    }
+
+    //Remove all user placed markers
+    void removeAllMarkers() {
+        for (Marker marker : mMarkerArrayList) {
+            marker.remove(this);
+        }
+        mMarkerArrayList.clear();
+        this.invalidate();
     }
 
     void setViewOn(BoundingBox bb) {

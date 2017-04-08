@@ -3,6 +3,7 @@
     <string name="searchView_hint">Where are you going?</string>
     <string name="offstreet_parking">Offstreet Parking</string>
     <array name="drawer_options">
+        <item>Off-Street Parkings</item>
         <item>Settings</item>
     </array>
 </resources>
