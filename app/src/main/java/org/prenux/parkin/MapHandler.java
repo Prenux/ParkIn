@@ -29,6 +29,7 @@ import java.util.List;
 
 class MapHandler extends MapView {
     //Initializing fields
+    double mLatitude, mLongitude;
     RotationGestureOverlay mRotationGestureOverlay;
     final static int M_ZOOM_THRESHOLD = 14;
     MainActivity mMainActivity;
@@ -44,10 +45,12 @@ class MapHandler extends MapView {
         super(context, attrs);
     }
 
-    void intializeMap(final MainActivity ma, String ua) {
+    void intializeMap(final MainActivity ma, String ua, float latitude, float longitude) {
         //Set context and user agent
         mMainActivity = ma;
         mUserAgent = ua;
+        mLatitude = (double) latitude;
+        mLongitude = (double) longitude;
 
         //Initialize map
         this.setTileSource(TileSourceFactory.MAPNIK);
@@ -61,7 +64,7 @@ class MapHandler extends MapView {
         //Set default view point
         IMapController mapController = this.getController();
         mapController.setZoom(18);
-        GeoPoint startPoint = new GeoPoint(45.500997, -73.615783);
+        GeoPoint startPoint = new GeoPoint(mLatitude, mLongitude);
         mapController.setCenter(startPoint);
 
         //Enable rotation of the map
