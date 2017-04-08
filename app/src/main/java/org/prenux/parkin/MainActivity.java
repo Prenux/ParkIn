@@ -2,10 +2,12 @@ package org.prenux.parkin;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -33,6 +35,10 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
 
+    //Default value to Initialize view on Andre-Aisenstadt
+    public float INIT_LATITUDE = (float) 45.500997;
+    public float INIT_LONGITUDE = (float) -73.615783;
+
     public String mUserAgent = "org.prenux.parkin";
     public MapHandler mMap;
     LocationManager mLocationManager;
@@ -56,12 +62,17 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
-        mMap.intializeMap(mMainActivity, mUserAgent);
+
+        //If preference values exist use them, else use default values
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        mMap.intializeMap(mMainActivity, mUserAgent,
+                sharedPref.getFloat("latitude", INIT_LATITUDE),
+                sharedPref.getFloat("longitude", INIT_LONGITUDE));
 
         Resources res = getResources();
         String[] strDrawerItems = res.getStringArray(R.array.drawer_options);
         ArrayList<MyDrawerItem> drawerItems = new ArrayList<>();
-        for(String s : strDrawerItems){
+        for (String s : strDrawerItems) {
             drawerItems.add(new MyDrawerItem(s));
         }
 
@@ -134,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     }
 
-
     public void onResume() {
         super.onResume();
         //this will refresh the osmdroid configuration on resuming.
@@ -142,6 +152,18 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         Configuration.getInstance().load(mMainActivity, PreferenceManager.getDefaultSharedPreferences(mMainActivity));
+    }
+
+    @Override
+    protected void onPause() {
+        // Save center of map to restore session when user reopens the app
+        super.onPause();
+        GeoPoint mSavedPosition = (GeoPoint) mMap.getMapCenter();
+        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putFloat("latitude", (float) mSavedPosition.getLatitude());
+        editor.putFloat("longitude", (float) mSavedPosition.getLongitude());
+        editor.commit();
     }
 
     // ------------------------------ Map events ---------------------------------------
