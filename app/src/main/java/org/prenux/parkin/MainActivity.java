@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
-
+    Context ctx;
     public ListView mLV;
     private SuggestionsDatabase database;
     ParkinDbHelper mDbHelper;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context ctx = getApplicationContext();
+        ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMainActivity = this;
 
         //database
-        mDbHelper=  new ParkinDbHelper(ctx);
+        mDbHelper = new ParkinDbHelper(ctx);
         //mDbHelper.importFile("test.csv",mDbHelper.db);
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
@@ -94,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                mDbHelper.importFile("places.csv",mDbHelper.db);
+                if(pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
+                //if(mDbHelper.db == null) Log.i("NOoooooooooooooo", "Noooooooooooooo");
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
