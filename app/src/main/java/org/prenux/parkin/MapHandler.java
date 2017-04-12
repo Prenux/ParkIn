@@ -1,8 +1,12 @@
 package org.prenux.parkin;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -40,6 +44,8 @@ class MapHandler extends MapView {
     Polyline mPolyline;
     ArrayList<Marker> mMarkerArrayList;
     public boolean mOffStreet;
+    GeocodingHandler mGeoHandler;
+    boolean mMachineScroll;
 
     MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -52,6 +58,9 @@ class MapHandler extends MapView {
         mLatitude = (double) latitude;
         mLongitude = (double) longitude;
 
+        mMachineScroll = false;
+        mGeoHandler = mMainActivity.mGeoHandler;
+
         //Initialize map
         this.setTileSource(TileSourceFactory.MAPNIK);
         this.setBuiltInZoomControls(true);
@@ -62,10 +71,12 @@ class MapHandler extends MapView {
         mOffStreet = true;
 
         //Set default view point
+        mMachineScroll = true;
         IMapController mapController = this.getController();
         mapController.setZoom(18);
         GeoPoint startPoint = new GeoPoint(mLatitude, mLongitude);
         mapController.setCenter(startPoint);
+        mMachineScroll = false;
 
         //Enable rotation of the map
         mRotationGestureOverlay = new RotationGestureOverlay(this.mMainActivity, this);
@@ -91,6 +102,11 @@ class MapHandler extends MapView {
         this.setMapListener(new DelayedMapListener(new MapListener() {
             @Override
             public boolean onZoom(ZoomEvent arg0) {
+                if(mGeoHandler.isGPS && !mMachineScroll && mGeoHandler.isFollowing){
+                    Log.d("noooooooooooo","map on zoom");
+                    mGeoHandler.isFollowing = false;
+                    mMainActivity.showRecenterButton();
+                }
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
@@ -102,6 +118,11 @@ class MapHandler extends MapView {
 
             @Override
             public boolean onScroll(ScrollEvent arg0) {
+                if(mGeoHandler.isGPS && !mMachineScroll && mGeoHandler.isFollowing){
+                    Log.d("noooooooooooo","map on scroll  "+Boolean.toString(mMachineScroll));
+                    mGeoHandler.isFollowing = false;
+                    mMainActivity.showRecenterButton();
+                }
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
@@ -134,7 +155,7 @@ class MapHandler extends MapView {
             marker.remove(this);
         }
         mMarkerArrayList.clear();
-        mMainActivity.mGeoHandler.mLocationMarker = null;
+        mGeoHandler.mLocationMarker = null;
         this.invalidate();
     }
 

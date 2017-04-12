@@ -3,12 +3,15 @@ package org.prenux.parkin;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -54,14 +58,20 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public ListView mLV;
     private SuggestionsDatabase database;
     ParkinDbHelper mDbHelper;
+    public FloatingActionButton mGpsButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
+
+        //Layout
+        mGpsButton = (FloatingActionButton) findViewById(R.id.locationFloatingActionButton);
+        mGpsButton.setBackgroundTintList(ColorStateList.valueOf(Color.LTGRAY));
 
         //Main Activity reference
         mMainActivity = this;
@@ -71,6 +81,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //mDbHelper.importFile("test.csv",mDbHelper.db);
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
+
+        //GPS Postion things
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
+        Log.d("noooooooooooo","map on after Geo");
 
         //If saved localization exist, use it, else use default values
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -109,14 +124,13 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Notifications things
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        //GPS Postion things
-        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
-
         //Initialize SearchHandler
         mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
                 mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
         mSearch.init();
+
+        Button recenter = (Button) findViewById(R.id.recenter_button);
+        recenter.setVisibility(View.GONE);
 
     }
 
@@ -175,6 +189,20 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     //Called from location button in layout with onClick attribute
     public void getPosition(View v) {
         Log.d("DEBUG", "getposition called");
-        mGeoHandler.getPosition();
+        mGeoHandler.getPosition(true);
+    }
+
+    public void showRecenterButton(){
+        Log.d("noooooooooooo","map on show recenter");
+        final Button recenter = (Button) findViewById(R.id.recenter_button);
+        recenter.setVisibility(View.VISIBLE);
+        recenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mGeoHandler.isFollowing = true;
+                recenter.setVisibility(View.GONE);
+                mGeoHandler.getPosition(false);
+            }
+        });
     }
 }
