@@ -18,7 +18,7 @@ class myLocationListener implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         if(gh.isFollowing){
-            gh.getPosition(false);
+            gh.getPosition();
         }
     }
 

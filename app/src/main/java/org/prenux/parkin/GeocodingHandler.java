@@ -16,7 +16,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.location.GeocoderNominatim;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
@@ -31,12 +30,12 @@ class GeocodingHandler {
     MapHandler mMapHandler;
     LocationListener mLocationListener;
     Marker mLocationMarker;
-    public boolean isGPS;
+    public boolean mIsGPS;
     public boolean isFollowing;
 
     GeocodingHandler(LocationManager lm, String ua, MainActivity ma, MapHandler mh) {
         this.isFollowing = true;
-        this.isGPS = false;
+        this.mIsGPS = false;
         mLocationManager = lm;
         mUserAgent = ua;
         mMainActivity = ma;
@@ -67,10 +66,9 @@ class GeocodingHandler {
     }
 
     //Executed when GPS position is requested
-    void getPosition(boolean isGPSAffected) {
+    void getPosition() {
         mMapHandler.mMachineScroll = true;
-        if(isGPSAffected) isGPS = !isGPS;
-        if (isGPS) {
+        if (mIsGPS) {
             mMainActivity.mGpsButton.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
             //Check if location services are enabled
             if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
@@ -94,6 +92,8 @@ class GeocodingHandler {
                 Dialog alertDialog = builder.create();
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.show();
+                mIsGPS = false;
+                mMainActivity.mGpsButton.setBackgroundTintList(ColorStateList.valueOf(Color.LTGRAY));
                 return;
             }
             Log.d("DEBUG", "Verify if permissons granted");
@@ -125,7 +125,7 @@ class GeocodingHandler {
             //If Marker not intialized yet
             if (mLocationMarker == null) {
                 mLocationMarker = new Marker(mMapHandler);
-                mMapHandler.mMarkerArrayList.add(mLocationMarker);
+                mLocationMarker.setIcon(mMainActivity.getResources().getDrawable(R.drawable.person));
                 mMapHandler.getOverlays().add(mLocationMarker);
             }
             if (gpsLocation != null) {
@@ -138,7 +138,6 @@ class GeocodingHandler {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    mMapHandler.mMarkerArrayList.remove(mLocationMarker);
                 }
             } else if (netLocation != null) {
                 try {
@@ -150,7 +149,6 @@ class GeocodingHandler {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    mMapHandler.mMarkerArrayList.remove(mLocationMarker);
                 }
                 mMapHandler.invalidate();
             }

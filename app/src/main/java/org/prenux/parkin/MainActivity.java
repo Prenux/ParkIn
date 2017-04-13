@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
         //database
         mDbHelper = new ParkinDbHelper(ctx);
-        //mDbHelper.importFile("test.csv",mDbHelper.db);
+
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
 
@@ -109,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
+                //Update DB item
                 if(pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
-                //if(mDbHelper.db == null) Log.i("NOoooooooooooooo", "Noooooooooooooo");
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     @Override
     public boolean longPressHelper(GeoPoint p) {
+        //Put Marker on the map
         Marker pressedMarker = new Marker(mMap);
         pressedMarker.setPosition(p);
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -187,9 +188,14 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     //Called from location button in layout with onClick attribute
-    public void getPosition(View v) {
-        Log.d("DEBUG", "getposition called");
-        mGeoHandler.getPosition(true);
+    public void gpsButtonClicked(View v) {
+        mGeoHandler.mIsGPS = !mGeoHandler.mIsGPS;
+        if(!mGeoHandler.mIsGPS){
+            hideRecenterButton();
+            mMap.removeLocationMarker();
+        }
+        Log.d("DEBUG", "gpsButtonClicked called");
+        mGeoHandler.getPosition();
     }
 
     public void showRecenterButton(){
@@ -199,10 +205,15 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         recenter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGeoHandler.isFollowing = true;
-                recenter.setVisibility(View.GONE);
-                mGeoHandler.getPosition(false);
+                hideRecenterButton();
             }
         });
+    }
+
+    public void hideRecenterButton(){
+        final Button recenter = (Button) findViewById(R.id.recenter_button);
+        mGeoHandler.isFollowing = true;
+        recenter.setVisibility(View.GONE);
+        mGeoHandler.getPosition();
     }
 }
