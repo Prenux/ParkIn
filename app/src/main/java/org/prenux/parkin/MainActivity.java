@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     private boolean mIsDrawerOpen;
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
+
+    public ListView mListView;
     Context ctx;
     public ListView mLV;
     private SuggestionsDatabase database;
@@ -127,11 +129,16 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Initialize SearchHandler
         mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
                 mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
+        mListView = (ListView) findViewById(R.id.searchListView);
         mSearch.init();
+
+
+        ArrayAdapter<String> lsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mSearch.mSearchHistory);
+        mListView.setAdapter(lsAdapter);
+        mListView.setVisibility(View.GONE);
 
         Button recenter = (Button) findViewById(R.id.recenter_button);
         recenter.setVisibility(View.GONE);
-
     }
 
     public void onResume() {
