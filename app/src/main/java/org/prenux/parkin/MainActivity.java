@@ -158,10 +158,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     // ------------------------------ Map events ---------------------------------------
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
-        //Toast.makeText(this, "Tap on (" + p.getLatitude() + "," + p.getLongitude() + ")", Toast.LENGTH_SHORT).show();
-        //InfoWindow.closeAllInfoWindowsOn(mMap);
+        InfoWindow.closeAllInfoWindowsOn(mMap);
         mMap.removeAllMarkers();
-        mMap.removeAllPOIs();
         return true;
     }
 
@@ -174,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.mMarkerArrayList.add(pressedMarker);
         mMap.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask(mGeoHandler, mMap).execute(pressedMarker);
+        pressedMarker.showInfoWindow();
+        if(pressedMarker.isInfoWindowShown()){
+            Log.d("DEBUG","info windown is shown");
+        }
         return true;
     }
 

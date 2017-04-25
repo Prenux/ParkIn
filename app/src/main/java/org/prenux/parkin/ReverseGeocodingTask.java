@@ -3,6 +3,7 @@ package org.prenux.parkin;
 import android.os.AsyncTask;
 
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 //Async task to reverse-geocode the marker position in a separate thread:
 class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
@@ -21,8 +22,9 @@ class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     }
 
     protected void onPostExecute(String result) {
+        marker.setInfoWindow(new MarkerInfoWindow(R.layout.activity_main, mMapHandler));
+        marker.setTitle("Miaw");
         marker.setSnippet(result);
-        marker.showInfoWindow();
         mMapHandler.invalidate();
     }
 }
