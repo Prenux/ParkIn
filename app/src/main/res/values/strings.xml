@@ -4,6 +4,9 @@
     <string name="offstreet_parking">Offstreet Parking</string>
     <array name="drawer_options">
         <item>Off-Street Parkings</item>
-        <item>Settings</item>
+        <item>Update DB</item>
     </array>
+    <string name="DBUpdated">DB Updated</string>
+    <string name="DBError">DB Error</string>
+    <string name="ReCenter">Re-Center</string>
 </resources>

@@ -3,12 +3,15 @@ package org.prenux.parkin;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -52,25 +56,38 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     NotificationManager mNotificationManager;
 
     public ListView mListView;
+    Context ctx;
+    public ListView mLV;
     private SuggestionsDatabase database;
     ParkinDbHelper mDbHelper;
+    public FloatingActionButton mGpsButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context ctx = getApplicationContext();
+
+        ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
+
+        //Layout
+        mGpsButton = (FloatingActionButton) findViewById(R.id.locationFloatingActionButton);
+        mGpsButton.setBackgroundTintList(ColorStateList.valueOf(Color.LTGRAY));
 
         //Main Activity reference
         mMainActivity = this;
 
         //database
-         mDbHelper=  new ParkinDbHelper(ctx);
-        mDbHelper.importFile("test.csv",mDbHelper.db);
+        mDbHelper = new ParkinDbHelper(ctx);
+
         //Initiate Map in constructor class
         mMap = (MapHandler) findViewById(R.id.map);
+
+        //GPS Postion things
+        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
+        Log.d("noooooooooooo","map on after Geo");
 
         //If saved localization exist, use it, else use default values
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -94,8 +111,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                Toast.makeText(getApplicationContext(), "" + Integer.toString(pos), Toast.LENGTH_SHORT).show();
-
+                //Update DB item
+                if(pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
@@ -109,20 +126,19 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Notifications things
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        //GPS Postion things
-        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
-
         //Initialize SearchHandler
         mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
                 mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
         mListView = (ListView) findViewById(R.id.searchListView);
         mSearch.init();
 
+
         ArrayAdapter<String> lsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mSearch.mSearchHistory);
         mListView.setAdapter(lsAdapter);
         mListView.setVisibility(View.GONE);
 
+        Button recenter = (Button) findViewById(R.id.recenter_button);
+        recenter.setVisibility(View.GONE);
     }
 
     public void onResume() {
@@ -158,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
 
     @Override
     public boolean longPressHelper(GeoPoint p) {
+        //Put Marker on the map
         Marker pressedMarker = new Marker(mMap);
         pressedMarker.setPosition(p);
         pressedMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -178,8 +195,32 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     }
 
     //Called from location button in layout with onClick attribute
-    public void getPosition(View v) {
-        Log.d("DEBUG", "getposition called");
+    public void gpsButtonClicked(View v) {
+        mGeoHandler.mIsGPS = !mGeoHandler.mIsGPS;
+        if(!mGeoHandler.mIsGPS){
+            hideRecenterButton();
+            mMap.removeLocationMarker();
+        }
+        Log.d("DEBUG", "gpsButtonClicked called");
+        mGeoHandler.getPosition();
+    }
+
+    public void showRecenterButton(){
+        Log.d("noooooooooooo","map on show recenter");
+        final Button recenter = (Button) findViewById(R.id.recenter_button);
+        recenter.setVisibility(View.VISIBLE);
+        recenter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideRecenterButton();
+            }
+        });
+    }
+
+    public void hideRecenterButton(){
+        final Button recenter = (Button) findViewById(R.id.recenter_button);
+        mGeoHandler.isFollowing = true;
+        recenter.setVisibility(View.GONE);
         mGeoHandler.getPosition();
     }
 }
