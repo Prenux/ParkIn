@@ -22,8 +22,6 @@ class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     }
 
     protected void onPostExecute(String result) {
-        marker.setInfoWindow(new MarkerInfoWindow(R.layout.activity_main, mMapHandler));
-        marker.setTitle("Miaw");
         marker.setSnippet(result);
         mMapHandler.invalidate();
     }
