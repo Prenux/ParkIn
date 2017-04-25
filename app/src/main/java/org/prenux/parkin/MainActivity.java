@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
 
-    public ListView mLV;
+    public ListView mListView;
     private SuggestionsDatabase database;
     ParkinDbHelper mDbHelper;
 
@@ -116,7 +116,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //Initialize SearchHandler
         mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
                 mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
+        mListView = (ListView) findViewById(R.id.searchListView);
         mSearch.init();
+
+        ArrayAdapter<String> lsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mSearch.mSearchHistory);
+        mListView.setAdapter(lsAdapter);
+        mListView.setVisibility(View.GONE);
 
     }
 

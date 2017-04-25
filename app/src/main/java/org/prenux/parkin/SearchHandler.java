@@ -2,6 +2,8 @@ package org.prenux.parkin;
 
 import android.content.SearchRecentSuggestionsProvider;
 import android.database.sqlite.SQLiteCursor;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 
@@ -43,6 +45,21 @@ public class SearchHandler extends SearchRecentSuggestionsProvider {
     }
 
     public void init() {
+
+        mSearchView.setOnSearchClickListener( new SearchView.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mSearchView.setFocusable(true);
+                mSearchView.requestFocusFromTouch();
+            }
+
+        });
+
+
+        /*mSearchView.onFocusChangeListener(
+
+        )
+        */
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -80,6 +97,7 @@ public class SearchHandler extends SearchRecentSuggestionsProvider {
                 return true;
             }
         });
+
     }
 
     public HashSet<String> getSearchHistory() {
