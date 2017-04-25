@@ -33,18 +33,17 @@ public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, Cursor>
         mMapHandler = mapHandler;
     }
 
-    protected Cursor doInBackground(Object... params) {
-
-        return mDb.getValueById((BoundingBox) params[0]);
+    protected ArrayList<POI> doInBackground(Object... params) {
+        return mDb.getFreeParkings((BoundingBox) params[0]);
     }
 
-    protected void onPostExecute(Cursor cursor) {
+    protected void onPostExecute(ArrayList<POI> pois) {
         mMapHandler.removeAllPOIs();
-        Drawable poiIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking);
+        Drawable poiIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking_green); //green markers for free parkings
         try {
-            /*for (POI poi : pois) {
+            for (POI poi : pois) {
                 Marker poiMarker = new Marker(mMapHandler);
-                poiMarker.setTitle(mMainActivity.getString(R.string.offstreet_parking));
+                poiMarker.setTitle(mMainActivity.getString(R.string.free_parkings));
                 poiMarker.setSnippet(poi.mDescription);
                 poiMarker.setPosition(poi.mLocation);
                 poiMarker.setIcon(poiIcon);
@@ -52,7 +51,7 @@ public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, Cursor>
                     poiMarker.setImage(new BitmapDrawable(poi.mThumbnail));
                 }
                 mPoiMarkers.add(poiMarker);
-            }*/
+            }
         } catch (Exception e) {
             Log.d("ParkingStreetRegGettingTask", e.toString());
         }

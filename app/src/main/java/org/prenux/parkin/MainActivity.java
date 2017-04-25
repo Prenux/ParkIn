@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         //GPS Postion things
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         mGeoHandler = new GeocodingHandler(mLocationManager, mUserAgent, mMainActivity, mMap);
-        Log.d("noooooooooooo","map on after Geo");
+        Log.d("noooooooooooo", "map on after Geo");
 
         //If saved localization exist, use it, else use default values
         SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
@@ -110,13 +110,14 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
-                mDbHelper.importFile("places.csv",mDbHelper.db);
+                mDbHelper.importFile("places.csv");
+                mDbHelper.importFile("sign2.csv");
                 //mDbHelper.getValueById("sefaf","afafafs");
-               // mDbHelper.getValueById("aes","se");
+                // mDbHelper.getValueById("aes","se");
 
 
                 //Update DB item
-                if(pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
+                if (pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
@@ -184,8 +185,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mMap.getOverlays().add(pressedMarker);
         new ReverseGeocodingTask(mGeoHandler, mMap).execute(pressedMarker);
         pressedMarker.showInfoWindow();
-        if(pressedMarker.isInfoWindowShown()){
-            Log.d("DEBUG","info windown is shown");
+        if (pressedMarker.isInfoWindowShown()) {
+            Log.d("DEBUG", "info windown is shown");
         }
         return true;
     }
@@ -203,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     //Called from location button in layout with onClick attribute
     public void gpsButtonClicked(View v) {
         mGeoHandler.mIsGPS = !mGeoHandler.mIsGPS;
-        if(!mGeoHandler.mIsGPS){
+        if (!mGeoHandler.mIsGPS) {
             hideRecenterButton();
             mMap.removeLocationMarker();
         }
@@ -211,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mGeoHandler.getPosition();
     }
 
-    public void showRecenterButton(){
-        Log.d("noooooooooooo","map on show recenter");
+    public void showRecenterButton() {
+        Log.d("noooooooooooo", "map on show recenter");
         final Button recenter = (Button) findViewById(R.id.recenter_button);
         recenter.setVisibility(View.VISIBLE);
         recenter.setOnClickListener(new View.OnClickListener() {
@@ -223,13 +224,12 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         });
     }
 
-    public void hideRecenterButton(){
+    public void hideRecenterButton() {
         final Button recenter = (Button) findViewById(R.id.recenter_button);
         mGeoHandler.isFollowing = true;
         recenter.setVisibility(View.GONE);
         mGeoHandler.getPosition();
     }
-
 
 
 }

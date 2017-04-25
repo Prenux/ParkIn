@@ -2,28 +2,29 @@ package org.prenux.parkin.database;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import org.prenux.parkin.database.ParkinSchema.ParkinTable;
+import org.osmdroid.bonuspack.location.POI;
+import org.osmdroid.util.BoundingBox;
+import org.prenux.parkin.database.ParkinSchema.Parcometer;
+import org.prenux.parkin.database.ParkinSchema.ParkinFree;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
-import static android.content.ContentValues.TAG;
-
+//TODO: 1) import fichier csv, 2) Creer methode bounding box
 
 public class ParkinDbHelper extends SQLiteOpenHelper {
     private static final int VERSION = 1;
     private static final String DATABASE_NAME = "parkinBase.db";
     public SQLiteDatabase db;
     private Context ctx;
-    public String fileName = "places.csv";
 
     public ParkinDbHelper(Context context) {
 
@@ -35,23 +36,26 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table " + ParkinTable.NAME + "(" +
+        db.execSQL("create table " + Parcometer.NAME + "(" +
                 " _id integer primary key autoincrement, " +
-                ParkinTable.Cols.ID + ", " +
-                ParkinTable.Cols.Longtitude + ", " +
-                ParkinTable.Cols.Magnetude + ", " +
-                // ParkinTable.Cols.LongtitudeC + ", " +
-                // ParkinTable.Cols.MagnetudeC + ", " +
-                // ParkinTable.Cols.Rue + ", " +
-                ParkinTable.Cols.Tarif +
+                Parcometer.Cols.ID + ", " +
+                Parcometer.Cols.LONGITUDE + ", " +
+                Parcometer.Cols.MAGNITUDE + ", " +
+                Parcometer.Cols.TARIF +
                 ")"
         );
 
-
+        db.execSQL("create table " + ParkinFree.NAME + "(" +
+                ParkinFree.Cols.LONGITUDE + ", " +
+                ParkinFree.Cols.LATITUDE + ", " +
+                ParkinFree.Cols.DESCRIPTION + ", " +
+                ParkinFree.Cols.CODE +
+                ")"
+        );
     }
 
 
-    public void importFile(String fileName, SQLiteDatabase db) {
+    public void importFile(String fileName) {
         db.beginTransaction();
         try {
             InputStream inStream = ctx.getResources().getAssets().open(fileName);
@@ -69,15 +73,21 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                     continue;
                 }
                 ContentValues cv = new ContentValues();
-                cv.put(ParkinTable.Cols.ID, columns[0].trim());
-                cv.put(ParkinTable.Cols.Longtitude, columns[1].trim());
-                cv.put(ParkinTable.Cols.Magnetude, columns[2].trim());
-                // cv.put(ParkinTable.Cols.LongtitudeC, columns[3].trim());
-                // cv.put(ParkinTable.Cols.MagnetudeC, columns[4].trim());
-                // cv.put(ParkinTable.Cols.Rue, columns[5].trim());
-                cv.put(ParkinTable.Cols.Tarif, columns[3].trim());
+
+                if (fileName.equals("places.csv")) {
+                    cv.put(Parcometer.Cols.ID, columns[0].trim());
+                    cv.put(Parcometer.Cols.LONGITUDE, columns[1].trim());
+                    cv.put(Parcometer.Cols.MAGNITUDE, columns[2].trim());
+                    cv.put(Parcometer.Cols.TARIF, columns[3].trim());
+                } else {
+                    cv.put(ParkinFree.Cols.LONGITUDE, columns[0].trim());
+                    cv.put(ParkinFree.Cols.LATITUDE, columns[1].trim());
+                    cv.put(ParkinFree.Cols.DESCRIPTION, columns[2].trim());
+                    cv.put(ParkinFree.Cols.CODE, columns[3].trim());
+                }
+
                 // put data in key value
-                db.insert(ParkinTable.NAME, null, cv);
+                db.insert(ParkinSchema.Parcometer.NAME, null, cv);
                 Log.d("CSV", "end while");
             }
             Log.d("CSV", "after a  while");
@@ -92,22 +102,40 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + ParkinTable.NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ParkinSchema.Parcometer.NAME);
         onCreate(db);
 
     }
 
+    public ArrayList<POI> getFreeParkings(BoundingBox bb) {
+        ArrayList<POI> free_parkings = new ArrayList<POI>();
+        Cursor res = db.rawQuery("select * from SPENDING", null); //SELECT all from PARKING where parking allowed (bon code)
+        res.moveToFirst();
+
+        double north = bb.getLatNorth();
+        double south = bb.getLatSouth();
+        double east = bb.getLonEast();
+        double west = bb.getLonWest();
+
+
+        res.close();
+        return free_parkings;
+
+    }
 
 }
+
+
+
 //
-   /* public void  getZone(String Longitude, String Magnetude){
+   /* public void  getZone(String LONGITUDE, String MAGNITUDE){
         Cursor cursor=null;
         String [] information=new String[4]; // a changer
 
         try{
             Log.d("Value","BeginTry");
             cursor = db.rawQuery("SELECT id FROM Reglementation WHERE magnetude= ? AND longtitude= ?" ,
-                    new String[] {Magnetude + "", Longitude+ ""} );
+                    new String[] {MAGNITUDE + "", LONGITUDE+ ""} );
             Log.d("Value","After query");
 
 
