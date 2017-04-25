@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         ctx = getApplicationContext();
         //important! set your user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
