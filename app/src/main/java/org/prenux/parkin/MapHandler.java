@@ -8,11 +8,9 @@ import android.widget.Toast;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -40,6 +38,8 @@ class MapHandler extends MapView {
     Polyline mPolyline;
     ArrayList<Marker> mMarkerArrayList;
     public boolean mOffStreet;
+    GeocodingHandler mGeoHandler;
+    boolean mMachineScroll;
 
     MapHandler(final Context context, final AttributeSet attrs) {
         super(context, attrs);
@@ -52,6 +52,9 @@ class MapHandler extends MapView {
         mLatitude = (double) latitude;
         mLongitude = (double) longitude;
 
+        mMachineScroll = false;
+        mGeoHandler = mMainActivity.mGeoHandler;
+
         //Initialize map
         this.setTileSource(TileSourceFactory.MAPNIK);
         this.setBuiltInZoomControls(true);
@@ -62,10 +65,12 @@ class MapHandler extends MapView {
         mOffStreet = true;
 
         //Set default view point
+        mMachineScroll = true;
         IMapController mapController = this.getController();
         mapController.setZoom(18);
         GeoPoint startPoint = new GeoPoint(mLatitude, mLongitude);
         mapController.setCenter(startPoint);
+        mMachineScroll = false;
 
         //Enable rotation of the map
         mRotationGestureOverlay = new RotationGestureOverlay(this.mMainActivity, this);
@@ -87,10 +92,10 @@ class MapHandler extends MapView {
         //Marker references arraylist
         mMarkerArrayList = new ArrayList<>();
 
-        //Set scroll and zoom event actions to update POI
-        this.setMapListener(new DelayedMapListener(new MapListener() {
+        //Delayed Map Listener for less sensitive events
+        final DelayedMapListener delayedMapListener = new DelayedMapListener(new MapListener() {
             @Override
-            public boolean onZoom(ZoomEvent arg0) {
+            public boolean onScroll(ScrollEvent event) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
@@ -101,7 +106,7 @@ class MapHandler extends MapView {
             }
 
             @Override
-            public boolean onScroll(ScrollEvent arg0) {
+            public boolean onZoom(ZoomEvent event) {
                 if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
                     new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
                             execute(mMapHandler.getBoundingBox());
@@ -110,7 +115,32 @@ class MapHandler extends MapView {
                     return false;
                 }
             }
-        }));
+        });
+
+        //Set scroll and zoom event actions to update POI
+        this.setMapListener(new MapListener() {
+            @Override
+            public boolean onZoom(ZoomEvent arg0) {
+                if (mGeoHandler.mIsGPS && !mMachineScroll && mGeoHandler.isFollowing) {
+                    Log.d("noooooooooooo", "map on zoom");
+                    mGeoHandler.isFollowing = false;
+                    mMainActivity.showRecenterButton();
+                }
+                delayedMapListener.onZoom(arg0);
+                return true;
+            }
+
+            @Override
+            public boolean onScroll(ScrollEvent arg0) {
+                if (mGeoHandler.mIsGPS && !mMachineScroll && mGeoHandler.isFollowing) {
+                    Log.d("noooooooooooo", "map on scroll  " + Boolean.toString(mMachineScroll));
+                    mGeoHandler.isFollowing = false;
+                    mMainActivity.showRecenterButton();
+                }
+                delayedMapListener.onScroll(arg0);
+                return true;
+            }
+        });
     }
 
     //Remove all POI markers
@@ -122,10 +152,17 @@ class MapHandler extends MapView {
                 overlays.remove(0);
             }
         } catch (Exception e) {
-            Log.d("DEBUG",e.toString());
+            Log.d("DEBUG", e.toString());
 
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
+    }
+
+    //remove the location marker
+    void removeLocationMarker(){
+        mGeoHandler.mLocationMarker.remove(this);
+        mGeoHandler.mLocationMarker = null;
+        this.invalidate();
     }
 
     //Remove all user placed markers
@@ -134,7 +171,6 @@ class MapHandler extends MapView {
             marker.remove(this);
         }
         mMarkerArrayList.clear();
-        mMainActivity.mGeoHandler.mLocationMarker = null;
         this.invalidate();
     }
 

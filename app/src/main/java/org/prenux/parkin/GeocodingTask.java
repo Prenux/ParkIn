@@ -53,7 +53,9 @@ class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
             String addressDisplayName = address.getExtras().getString("display_name");
             GeoPoint destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
             //Marker markerDestination = new Marker(mMap);
+            mMapHandler.mMachineScroll = true;
             mMapHandler.getController().setCenter(destinationPoint);
+            mMapHandler.mMachineScroll = false;
             //get and display enclosing polygon:
             Bundle extras = address.getExtras();
             if (extras != null && extras.containsKey("polygonpoints")) {

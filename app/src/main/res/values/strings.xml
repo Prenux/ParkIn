@@ -6,4 +6,7 @@
         <item>Off-Street Parkings</item>
         <item>Update DB</item>
     </array>
+    <string name="DBUpdated">DB Updated</string>
+    <string name="DBError">DB Error</string>
+    <string name="ReCenter">Re-Center</string>
 </resources>
