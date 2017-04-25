@@ -95,6 +95,10 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
                 mDbHelper.importFile("places.csv",mDbHelper.db);
+                mDbHelper.getValueById("sefaf","afafafs");
+               // mDbHelper.getValueById("aes","se");
+
+
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                     @Override
                     public void onDrawerClosed(View drawerView) {
@@ -116,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
                 mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
         mSearch.init();
+
 
     }
 
@@ -176,4 +181,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         Log.d("DEBUG", "getposition called");
         mGeoHandler.getPosition();
     }
+
+
+
 }

@@ -107,27 +107,32 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
 
 //
-    public void  getValueById(String id){
+   /* public void  getZone(String Longitude, String Magnetude){
         Cursor cursor=null;
-        String [] information=new String[7]; // a changer
+        String [] information=new String[4]; // a changer
 
         try{
-            cursor = db.rawQuery("SELECT id FROM Reglementation WHERE id=" , new String[] {id + ""});  // ..id=" + id ne marchait pas
+            Log.d("Value","BeginTry");
+            cursor = db.rawQuery("SELECT id FROM Reglementation WHERE magnetude= ? AND longtitude= ?" ,
+                    new String[] {Magnetude + "", Longitude+ ""} );
+            Log.d("Value","After query");
 
 
-        if(cursor.getCount() > 0) {
+            if(cursor.getCount() > 0) {
             cursor.moveToFirst();
-            for (int i = 0; i < 8; i++) { //SUPER NOOB :)
-                information[i] = cursor.getString(cursor.getColumnIndex(id) + i); //
+                Log.d("Value","After movetofirst");
+
+                for (int i = 0; i < 5; i++) { //SUPER NOOB :)
+                information[i] = cursor.getString(cursor.getColumnIndex("id") + i); //
             }
         }
-        new  Reglement(information);
+        Log.d("tab", information[0]);
     }
     finally {
         cursor.close();
     }
 }
-
+*/
 
     }
 
