@@ -109,13 +109,13 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
     public ArrayList<POI> getFreeParkings(BoundingBox bb) {
         ArrayList<POI> free_parkings = new ArrayList<POI>();
-        Cursor res = db.rawQuery("select * from SPENDING", null); //SELECT all from PARKING where parking allowed (bon code)
-        res.moveToFirst();
-
         double north = bb.getLatNorth();
         double south = bb.getLatSouth();
         double east = bb.getLonEast();
         double west = bb.getLonWest();
+        
+        Cursor res = db.rawQuery("select * from SPENDING", null); //SELECT all from PARKING where parking allowed (bon code)
+        res.moveToFirst();
 
 
         res.close();
