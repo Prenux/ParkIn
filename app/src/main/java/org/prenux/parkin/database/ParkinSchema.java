@@ -4,7 +4,7 @@ package org.prenux.parkin.database;
 
 public class ParkinSchema {
     public static class Parcometer {
-        public static String NAME = "Reglementation";
+        public static String NAME = "PARCOMETER";
 
 
         public static class Cols {
@@ -18,7 +18,7 @@ public class ParkinSchema {
 
 
     public static class ParkinFree {
-        public static String NAME = "Reglementation";
+        public static String NAME = "PARKINFREE";
 
         public static class Cols {
             public static final String LONGITUDE = "longitude";

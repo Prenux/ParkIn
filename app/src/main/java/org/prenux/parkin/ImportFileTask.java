@@ -26,7 +26,7 @@ public class ImportFileTask extends AsyncTask<Object, Void, Boolean> {
 
     protected Boolean doInBackground(Object... params) {
         try {
-            this.dbHelper.importFile(this.fileName, this.db);
+            this.dbHelper.importFile(this.fileName);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

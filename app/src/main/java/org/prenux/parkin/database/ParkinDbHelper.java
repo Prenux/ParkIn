@@ -9,6 +9,7 @@ import android.util.Log;
 
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
 import org.prenux.parkin.database.ParkinSchema.Parcometer;
 import org.prenux.parkin.database.ParkinSchema.ParkinFree;
 
@@ -18,7 +19,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-//TODO: 1) import fichier csv, 2) Creer methode bounding box
 
 public class ParkinDbHelper extends SQLiteOpenHelper {
     private static final int VERSION = 1;
@@ -59,19 +59,12 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             InputStream inStream = ctx.getResources().getAssets().open(fileName);
-            Log.d("CSV", "in try");
             BufferedReader buffer = new BufferedReader(new InputStreamReader(inStream));
             String line = "";
-            Log.d("CSV", "in transaction");
 
             while ((line = buffer.readLine()) != null) {
                 String[] columns = line.split(",");
-                Log.d("CSV", "in while");
 
-                if (columns.length != 4) {
-                    Log.d("CSVParser", "Skipping Bad CSV Row : " + columns.length);
-                    continue;
-                }
                 ContentValues cv = new ContentValues();
 
                 if (fileName.equals("places.csv")) {
@@ -79,25 +72,21 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                     cv.put(Parcometer.Cols.LONGITUDE, columns[1].trim());
                     cv.put(Parcometer.Cols.MAGNITUDE, columns[2].trim());
                     cv.put(Parcometer.Cols.TARIF, columns[3].trim());
+                    db.insert(Parcometer.NAME, null, cv);
                 } else {
                     cv.put(ParkinFree.Cols.LONGITUDE, columns[0].trim());
                     cv.put(ParkinFree.Cols.LATITUDE, columns[1].trim());
                     cv.put(ParkinFree.Cols.DESCRIPTION, columns[2].trim());
                     cv.put(ParkinFree.Cols.CODE, columns[3].trim());
+                    db.insert(ParkinFree.NAME, null, cv);
                 }
-
-                // put data in key value
-                db.insert(ParkinSchema.Parcometer.NAME, null, cv);
-                Log.d("CSV", "end while");
             }
-            Log.d("CSV", "after a  while");
             db.setTransactionSuccessful();
         } catch (IOException e) {
             e.printStackTrace();
             Log.d("Exception", e.toString());
         }
         db.endTransaction();
-        Log.d("CSV", "Fin");
     }
 
     @Override
@@ -107,24 +96,33 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
     }
 
-    public ArrayList<POI> getFreeParkings(BoundingBox bb) {
-        ArrayList<POI> free_parkings = new ArrayList<POI>();
+    public ArrayList<GeoPoint> getFreeParkings(BoundingBox bb) {
+        ArrayList<GeoPoint> free_parkings = new ArrayList<GeoPoint>();
         double north = bb.getLatNorth();
         double south = bb.getLatSouth();
         double east = bb.getLonEast();
         double west = bb.getLonWest();
-        
-        Cursor res = db.rawQuery("select * from SPENDING", null); //SELECT all from PARKING where parking allowed (bon code)
-        res.moveToFirst();
+        try {
+            Cursor res = db.rawQuery("SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AMD longitude>=" + west +
+                    " AND latitude<=" + north + " AND latitude>=" + south, null); //SELECT all from PARKING where parking allowed (bon code)
+            res.moveToFirst();
 
+            //ajoute les parkings trouves a ArrayList
+            while (!res.isAfterLast()) {
+                free_parkings.add(new GeoPoint(res.getDouble(res.getColumnIndex(ParkinFree.Cols.LATITUDE)),
+                        res.getDouble(res.getColumnIndex(ParkinFree.Cols.LONGITUDE))));
+                res.moveToNext();
+            }
 
-        res.close();
+            res.close();
+
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
         return free_parkings;
 
     }
-
 }
-
 
 
 //
