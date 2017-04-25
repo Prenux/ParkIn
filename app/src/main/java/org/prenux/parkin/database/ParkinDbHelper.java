@@ -94,6 +94,30 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + ParkinTable.NAME);
         onCreate(db);
+
+    }
+
+
+}
+//
+   /* public void  getZone(String Longitude, String Magnetude){
+        Cursor cursor=null;
+        String [] information=new String[4]; // a changer
+
+        try{
+            Log.d("Value","BeginTry");
+            cursor = db.rawQuery("SELECT id FROM Reglementation WHERE magnetude= ? AND longtitude= ?" ,
+                    new String[] {Magnetude + "", Longitude+ ""} );
+            Log.d("Value","After query");
+
+
+            if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+                Log.d("Value","After movetofirst");
+
+                for (int i = 0; i < 5; i++) { //SUPER NOOB :)
+                information[i] = cursor.getString(cursor.getColumnIndex("id") + i); //
+=======
     }
 
 
@@ -108,10 +132,27 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                 for (int i = 0; i < 8; i++) { //SUPER NOOB :)
                     information[i] = cursor.getString(cursor.getColumnIndex(id) + i); //
                 }
+>>>>>>> a0dc5b3b110811798284140ac17c1aec2a0959fa
             }
             new Reglement(information);
         } finally {
             cursor.close();
         }
+<<<<<<< HEAD
+        Log.d("tab", information[0]);
+    }
+    finally {
+        cursor.close();
     }
 }
+*/
+
+
+
+
+
+
+
+
+
+

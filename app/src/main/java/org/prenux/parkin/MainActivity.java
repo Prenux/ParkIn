@@ -110,6 +110,11 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         navList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
+                mDbHelper.importFile("places.csv",mDbHelper.db);
+                //mDbHelper.getValueById("sefaf","afafafs");
+               // mDbHelper.getValueById("aes","se");
+
+
                 //Update DB item
                 if(pos == 1) new ImportFileTask("places.csv", ctx, mDbHelper).execute();
                 mDrawer.setDrawerListener(new DrawerLayout.SimpleDrawerListener() {
@@ -224,4 +229,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         recenter.setVisibility(View.GONE);
         mGeoHandler.getPosition();
     }
+
+
+
 }
