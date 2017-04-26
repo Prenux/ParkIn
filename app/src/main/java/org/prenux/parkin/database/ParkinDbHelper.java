@@ -227,10 +227,11 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
             Log.d("ParkinDBHelperDebug", "Before WHILE");
             //Ajoute les parkings trouves a ArrayList
             while (!res.isAfterLast()) {
-                if (validateTime(res.getString(res.getColumnIndex(ParkinFree.Cols.DESCRIPTION))))
+                if (validateTime(res.getString(res.getColumnIndex(ParkinFree.Cols.DESCRIPTION)))) {
                     Log.d("ParkinDBHelperDebug", "IN IF");
                     free_parkings.add(new GeoPoint(res.getDouble(res.getColumnIndex(ParkinFree.Cols.LATITUDE)),
                             res.getDouble(res.getColumnIndex(ParkinFree.Cols.LONGITUDE))));
+                }
                 res.moveToNext();
             }
 

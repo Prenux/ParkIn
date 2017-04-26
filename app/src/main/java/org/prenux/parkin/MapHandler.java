@@ -96,17 +96,15 @@ class MapHandler extends MapView {
         mPoiMarkers.setIcon(clusterIcon);
         mPoiMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
         mPoiMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
-        mPoiMarkers.getTextPaint().setColor(Color.RED);
         this.getOverlays().add(mPoiMarkers);
 
         //Free street Parkin
         mFreeParkinMarkers = new RadiusMarkerClusterer(getContext());
-        Drawable freeClusterIconD = getResources().getDrawable(R.drawable.marker_cluster);
+        Drawable freeClusterIconD = getResources().getDrawable(R.drawable.marker_cluster_green);
         Bitmap freeClusterIcon = ((BitmapDrawable)freeClusterIconD).getBitmap();
         mFreeParkinMarkers.setIcon(freeClusterIcon);
         mFreeParkinMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
         mFreeParkinMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
-        mFreeParkinMarkers.getTextPaint().setColor(Color.RED);
         this.getOverlays().add(mFreeParkinMarkers);
 
         //Set mapHandler obj to be passed in AsyncTask
