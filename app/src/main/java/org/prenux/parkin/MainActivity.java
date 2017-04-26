@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int pos, long id) {
                 mDbHelper.importFile("places.csv");
-                mDbHelper.importFile("sign2.csv");
+                mDbHelper.importFile("sign4.csv");
                 //mDbHelper.getValueById("sefaf","afafafs");
                 // mDbHelper.getValueById("aes","se");
 
