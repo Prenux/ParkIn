@@ -33,11 +33,13 @@ class MapHandler extends MapView {
     MainActivity mMainActivity;
     NominatimPOIProvider mParkingPoiProvider;
     FolderOverlay mPoiMarkers;
+    FolderOverlay mFreeParkinMarkers;
     String mUserAgent;
     MapHandler mMapHandler;
     Polyline mPolyline;
     ArrayList<Marker> mMarkerArrayList;
     public boolean mOffStreet;
+    public boolean mStreetReg;
     GeocodingHandler mGeoHandler;
     boolean mMachineScroll;
 
@@ -63,6 +65,7 @@ class MapHandler extends MapView {
         this.setMinZoomLevel(2);
         this.setTilesScaledToDpi(true);
         mOffStreet = true;
+        mStreetReg = true;
 
         //Set default view point
         mMachineScroll = true;
@@ -81,9 +84,13 @@ class MapHandler extends MapView {
         MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(mMainActivity, mMainActivity);
         this.getOverlays().add(0, mapEventsOverlay);
 
-        //Points of interests
+        //Points of interests (Offstreet parking)
         mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
         mPoiMarkers = new FolderOverlay(this.mMainActivity);
+        this.getOverlays().add(mPoiMarkers);
+
+        //Free street Parkin
+        mFreeParkinMarkers = new FolderOverlay(this.mMainActivity);
         this.getOverlays().add(mPoiMarkers);
 
         //Set mapHandler obj to be passed in AsyncTask
@@ -96,9 +103,15 @@ class MapHandler extends MapView {
         final DelayedMapListener delayedMapListener = new DelayedMapListener(new MapListener() {
             @Override
             public boolean onScroll(ScrollEvent event) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
-                    new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
-                            execute(mMapHandler.getBoundingBox());
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                    if(mOffStreet){
+                        new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
+                                execute(mMapHandler.getBoundingBox());
+                    }
+                    if(mStreetReg){
+                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper,mPoiMarkers, mMainActivity, mMapHandler).
+                                execute(mMapHandler.getBoundingBox());
+                    }
                     return true;
                 } else {
                     return false;
@@ -107,9 +120,15 @@ class MapHandler extends MapView {
 
             @Override
             public boolean onZoom(ZoomEvent event) {
-                if (getZoomLevel() >= M_ZOOM_THRESHOLD && mOffStreet) {
-                    new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
-                            execute(mMapHandler.getBoundingBox());
+                if (getZoomLevel() >= M_ZOOM_THRESHOLD) {
+                    if(mOffStreet){
+                        new ParkingPOIGettingTask(mParkingPoiProvider, mPoiMarkers, mMainActivity, mMapHandler).
+                                execute(mMapHandler.getBoundingBox());
+                    }
+                    if(mStreetReg){
+                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper,mPoiMarkers, mMainActivity, mMapHandler).
+                                execute(mMapHandler.getBoundingBox());
+                    }
                     return true;
                 } else {
                     return false;
@@ -155,6 +174,20 @@ class MapHandler extends MapView {
             Log.d("DEBUG", e.toString());
 
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    void removeAllStreetReg() {
+        try {
+            List<Overlay> overlays = mFreeParkinMarkers.getItems();
+            int size = overlays.size();
+            for (int i = 0; i < size; i++) {
+                overlays.remove(0);
+            }
+        } catch (Exception e) {
+            Log.d("DEBUG", e.toString());
+
+            Toast.makeText(mMainActivity, "Error in removing all Street Reg.", Toast.LENGTH_LONG).show();
         }
     }
 

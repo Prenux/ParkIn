@@ -187,7 +187,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                     cv.put(Parcometer.Cols.MAGNITUDE, columns[2].trim());
                     cv.put(Parcometer.Cols.TARIF, columns[3].trim());
                     db.insert(Parcometer.NAME, null, cv);
-                } else {
+                } else if(fileName.equals("sign4.csv")) {
                     cv.put(ParkinFree.Cols.LONGITUDE, columns[0].trim());
                     cv.put(ParkinFree.Cols.LATITUDE, columns[1].trim());
                     cv.put(ParkinFree.Cols.DESCRIPTION, columns[2].trim());
@@ -206,24 +206,25 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + ParkinSchema.Parcometer.NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ParkinSchema.ParkinFree.NAME);
         onCreate(db);
-
     }
 
     //Method used to find free parkings that are in distance of the bounding box,
     //which is the region identified by the size of your screen
     public ArrayList<GeoPoint> getFreeParkings(BoundingBox bb) {
-        ArrayList<GeoPoint> free_parkings = new ArrayList<GeoPoint>();
+        Log.d("DEBUG", "getting free parkings");
+        ArrayList<GeoPoint> free_parkings = new ArrayList<>();
         double north = bb.getLatNorth();
         double south = bb.getLatSouth();
         double east = bb.getLonEast();
         double west = bb.getLonWest();
         try {
-            Cursor res = db.rawQuery("SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AMD longitude>=" + west +
+            Cursor res = db.rawQuery("SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
                     " AND latitude<=" + north + " AND latitude>=" + south, null); //SELECT all from PARKING where parking allowed (bon code)
             res.moveToFirst();
 
-            //ajoute les parkings trouves a ArrayList
+            //Ajoute les parkings trouves a ArrayList
             while (!res.isAfterLast()) {
                 if (validateTime(res.getString(res.getColumnIndex(ParkinFree.Cols.DESCRIPTION))))
                     free_parkings.add(new GeoPoint(res.getDouble(res.getColumnIndex(ParkinFree.Cols.LATITUDE)),
@@ -233,11 +234,11 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
             res.close();
 
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.d("DEBUG", "Size : " + free_parkings.size());
         return free_parkings;
-
     }
 
     //Method to validate if a user can park in a certain free parking at a certain time
@@ -256,9 +257,9 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
 
         //Split rule in parts and create ArrayList that will be used to retrieve bounds on values
         String[] splited_rule = rule.split(" ");
-        List<Double> hours = new ArrayList<Double>();
-        List<Double> days = new ArrayList<Double>();
-        List<Double> months = new ArrayList<Double>();
+        List<Double> hours = new ArrayList<>();
+        List<Double> days = new ArrayList<>();
+        List<Double> months = new ArrayList<>();
 
         outerLoop:
         for (String rule_part : splited_rule) {

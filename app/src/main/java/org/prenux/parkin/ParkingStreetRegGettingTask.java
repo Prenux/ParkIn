@@ -18,14 +18,14 @@ import java.util.ArrayList;
  */
 
 public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, ArrayList<GeoPoint>> {
-    FolderOverlay mPoiMarkers;
+    FolderOverlay mfreeParkinMarkers;
     Context mMainActivity;
     MapHandler mMapHandler;
     ParkinDbHelper mDb;
 
     ParkingStreetRegGettingTask(ParkinDbHelper db, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
         mDb = db;
-        mPoiMarkers = fo;
+        mfreeParkinMarkers = fo;
         mMainActivity = ma;
         mMapHandler = mapHandler;
     }
@@ -35,15 +35,15 @@ public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, ArrayLi
     }
 
     protected void onPostExecute(ArrayList<GeoPoint> geopoints) {
-        mMapHandler.removeAllPOIs();
-        Drawable poiIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking_green); //green markers for free parkings
+        mMapHandler.removeAllStreetReg();
+        Drawable freeParkinIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking_green); //green markers for free parkings
         try {
             for (GeoPoint gp : geopoints) {
-                Marker poiMarker = new Marker(mMapHandler);
-                poiMarker.setTitle(mMainActivity.getString(R.string.free_parkings));
-                poiMarker.setPosition(gp);
-                poiMarker.setIcon(poiIcon);
-                mPoiMarkers.add(poiMarker);
+                Marker StreetRegMarker = new Marker(mMapHandler);
+                StreetRegMarker.setTitle(mMainActivity.getString(R.string.free_parkings));
+                StreetRegMarker.setPosition(gp);
+                StreetRegMarker.setIcon(freeParkinIcon);
+                mfreeParkinMarkers.add(StreetRegMarker);
             }
         } catch (Exception e) {
             Log.d("FreeParkingAsync", e.toString());
