@@ -1,11 +1,16 @@
 package org.prenux.parkin;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
@@ -32,8 +37,8 @@ class MapHandler extends MapView {
     final static int M_ZOOM_THRESHOLD = 14;
     MainActivity mMainActivity;
     NominatimPOIProvider mParkingPoiProvider;
-    FolderOverlay mPoiMarkers;
-    FolderOverlay mFreeParkinMarkers;
+    RadiusMarkerClusterer mPoiMarkers;
+    RadiusMarkerClusterer mFreeParkinMarkers;
     String mUserAgent;
     MapHandler mMapHandler;
     Polyline mPolyline;
@@ -86,12 +91,28 @@ class MapHandler extends MapView {
 
         //Points of interests (Offstreet parking)
         mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
-        mPoiMarkers = new FolderOverlay(this.mMainActivity);
+        mPoiMarkers = new RadiusMarkerClusterer(getContext());
+        Drawable clusterIconD = getResources().getDrawable(R.drawable.marker_parking);
+        Bitmap clusterIcon = ((BitmapDrawable)clusterIconD).getBitmap();
+        mPoiMarkers.setIcon(clusterIcon);
+        mPoiMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
+        mPoiMarkers.mTextAnchorU = 0.70f;
+        mPoiMarkers.mTextAnchorV = 0.20f;
+        mPoiMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
+        mPoiMarkers.getTextPaint().setColor(Color.RED);
         this.getOverlays().add(mPoiMarkers);
 
         //Free street Parkin
-        mFreeParkinMarkers = new FolderOverlay(this.mMainActivity);
-        this.getOverlays().add(mPoiMarkers);
+        mFreeParkinMarkers = new RadiusMarkerClusterer(getContext());
+        Drawable freeClusterIconD = getResources().getDrawable(R.drawable.marker_parking_green);
+        Bitmap freeClusterIcon = ((BitmapDrawable)freeClusterIconD).getBitmap();
+        mFreeParkinMarkers.setIcon(freeClusterIcon);
+        mFreeParkinMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
+        mFreeParkinMarkers.mTextAnchorU = 0.70f;
+        mFreeParkinMarkers.mTextAnchorV = 0.20f;
+        mFreeParkinMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
+        mFreeParkinMarkers.getTextPaint().setColor(Color.RED);
+        this.getOverlays().add(mFreeParkinMarkers);
 
         //Set mapHandler obj to be passed in AsyncTask
         mMapHandler = this;
@@ -109,7 +130,7 @@ class MapHandler extends MapView {
                                 execute(mMapHandler.getBoundingBox());
                     }
                     if(mStreetReg){
-                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper,mPoiMarkers, mMainActivity, mMapHandler).
+                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper, mFreeParkinMarkers, mMainActivity, mMapHandler).
                                 execute(mMapHandler.getBoundingBox());
                     }
                     return true;
@@ -126,7 +147,7 @@ class MapHandler extends MapView {
                                 execute(mMapHandler.getBoundingBox());
                     }
                     if(mStreetReg){
-                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper,mPoiMarkers, mMainActivity, mMapHandler).
+                        new ParkingStreetRegGettingTask(mMainActivity.mDbHelper, mFreeParkinMarkers, mMainActivity, mMapHandler).
                                 execute(mMapHandler.getBoundingBox());
                     }
                     return true;
@@ -165,7 +186,7 @@ class MapHandler extends MapView {
     //Remove all POI markers
     void removeAllPOIs() {
         try {
-            List<Overlay> overlays = mPoiMarkers.getItems();
+            ArrayList<Marker> overlays = mPoiMarkers.getItems();
             int size = overlays.size();
             for (int i = 0; i < size; i++) {
                 overlays.remove(0);
@@ -179,10 +200,10 @@ class MapHandler extends MapView {
 
     void removeAllStreetReg() {
         try {
-            List<Overlay> overlays = mFreeParkinMarkers.getItems();
-            int size = overlays.size();
+            ArrayList<Marker> markers = mFreeParkinMarkers.getItems();
+            int size = markers.size();
             for (int i = 0; i < size; i++) {
-                overlays.remove(0);
+                markers.remove(0);
             }
         } catch (Exception e) {
             Log.d("MapHandlerDebug", e.toString());

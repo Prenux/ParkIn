@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -18,14 +19,14 @@ import java.util.ArrayList;
  */
 
 public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, ArrayList<GeoPoint>> {
-    FolderOverlay mfreeParkinMarkers;
+    RadiusMarkerClusterer mfreeParkinMarkers;
     Context mMainActivity;
     MapHandler mMapHandler;
     ParkinDbHelper mDb;
 
-    ParkingStreetRegGettingTask(ParkinDbHelper db, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
+    ParkingStreetRegGettingTask(ParkinDbHelper db, RadiusMarkerClusterer rmc, MainActivity ma, MapHandler mapHandler) {
         mDb = db;
-        mfreeParkinMarkers = fo;
+        mfreeParkinMarkers = rmc;
         mMainActivity = ma;
         mMapHandler = mapHandler;
     }

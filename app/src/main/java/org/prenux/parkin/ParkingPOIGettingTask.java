@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.util.BoundingBox;
@@ -22,13 +23,13 @@ import java.util.ArrayList;
 class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
 
     NominatimPOIProvider mParkingPoiProvider;
-    FolderOverlay mPoiMarkers;
+    RadiusMarkerClusterer mPoiMarkers;
     Context mMainActivity;
     MapHandler mMapHandler;
 
-    ParkingPOIGettingTask(NominatimPOIProvider npp, FolderOverlay fo, MainActivity ma, MapHandler mapHandler) {
+    ParkingPOIGettingTask(NominatimPOIProvider npp, RadiusMarkerClusterer rcm, MainActivity ma, MapHandler mapHandler) {
         mParkingPoiProvider = npp;
-        mPoiMarkers = fo;
+        mPoiMarkers = rcm;
         mMainActivity = ma;
         mMapHandler = mapHandler;
     }
