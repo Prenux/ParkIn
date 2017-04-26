@@ -32,8 +32,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
     private Context ctx;
 
     //Sets used to process rules
-    String[] ACCEPTTERMS = {"en tout temps"};
-    String[] DENYTERMS = {"excepte", "interdit", "debarcadere", "reserve", "entretien", "sortie", "autobus", "pompier"};
+    String[] DENYTERMS = {"excepte", "interdit", "debarcadere", "reserve", "entretien", "sortie", "autobus", "pompier", "en tout temps"};
 
     //Minuit = 0, enleve le 1er 0
     Map<String, Double> HOURS_MAP = new HashMap<String, Double>() {{
@@ -223,10 +222,14 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
             Cursor res = db.rawQuery("SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
                     " AND latitude<=" + north + " AND latitude>=" + south, null); //SELECT all from PARKING where parking allowed (bon code)
             res.moveToFirst();
-
+            Log.d("DEBUG", "SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
+                    " AND latitude<=" + north + " AND latitude>=" + south);
+            Log.d("DEBUG", "Before WHILE");
             //Ajoute les parkings trouves a ArrayList
             while (!res.isAfterLast()) {
+                Log.d("DEBUG", "Beffore");
                 if (validateTime(res.getString(res.getColumnIndex(ParkinFree.Cols.DESCRIPTION))))
+                    Log.d("DEBUG", "IN IF");
                     free_parkings.add(new GeoPoint(res.getDouble(res.getColumnIndex(ParkinFree.Cols.LATITUDE)),
                             res.getDouble(res.getColumnIndex(ParkinFree.Cols.LONGITUDE))));
                 res.moveToNext();
@@ -248,10 +251,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
         rule = rule.toLowerCase().replace(".", "").replace("-", " ");
         rule = Normalizer.normalize(rule, Normalizer.Form.NFD);
         rule = rule.replaceAll("[^\\p{ASCII}]", "");
-
-        //Check accept terms
-        for (String str : ACCEPTTERMS) if (rule.contains(str)) return true;
-
+        
         //Check deny terms
         for (String str : DENYTERMS) if (rule.contains(str)) return false;
 
