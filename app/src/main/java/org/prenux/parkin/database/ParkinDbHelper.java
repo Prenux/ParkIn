@@ -10,6 +10,7 @@ import android.util.Log;
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.prenux.parkin.ImportFileTask;
 import org.prenux.parkin.database.ParkinSchema.Parcometer;
 import org.prenux.parkin.database.ParkinSchema.ParkinFree;
 
@@ -165,6 +166,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
                 ParkinFree.Cols.CODE +
                 ")"
         );
+        new ImportFileTask("sign4.csv", ctx, this).execute();
     }
 
 

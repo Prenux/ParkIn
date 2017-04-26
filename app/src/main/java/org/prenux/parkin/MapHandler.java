@@ -148,7 +148,7 @@ class MapHandler extends MapView {
                     return false;
                 }
             }
-        });
+        }, 500);
 
         //Set scroll and zoom event actions to update POI
         this.setMapListener(new MapListener() {

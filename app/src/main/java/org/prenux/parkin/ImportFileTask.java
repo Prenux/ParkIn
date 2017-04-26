@@ -17,7 +17,7 @@ public class ImportFileTask extends AsyncTask<Object, Void, Boolean> {
     Context ctx;
     ParkinDbHelper dbHelper;
 
-    ImportFileTask(String fileName, Context ctx, ParkinDbHelper dbHelper) {
+    public ImportFileTask(String fileName, Context ctx, ParkinDbHelper dbHelper) {
         this.fileName = fileName;
         this.ctx = ctx;
         this.dbHelper = dbHelper;

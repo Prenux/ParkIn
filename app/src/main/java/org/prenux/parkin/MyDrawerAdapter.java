@@ -64,7 +64,21 @@ public class MyDrawerAdapter extends BaseAdapter {
                     }
                 }
             });
-        } else {
+        } else if(position == 1){
+            v = inflater.inflate(R.layout.layout_toggle, parent, false);
+            CheckBox chkBox = (CheckBox) v.findViewById(R.id.chkbox);
+            chkBox.setText(choice.name);
+            chkBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    CheckBox chkbox = (CheckBox) v;
+                    mMap.mStreetReg = chkbox.isChecked();
+                    if(!chkbox.isChecked()){
+                        mMap.removeAllStreetReg();
+                    }
+                }
+            });
+        }else {
             v = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
             TextView textView = (TextView) v.findViewById(android.R.id.text1);
             textView.setText(choice.name);

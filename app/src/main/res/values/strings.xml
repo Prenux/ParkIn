@@ -5,7 +5,7 @@
     <string name="free_parkings">Free Parkings</string>
     <array name="drawer_options">
         <item>Off-Street Parkings</item>
-        <item>Update DB</item>
+        <item>Free Street Parkings</item>
     </array>
     <string name="DBUpdated">DB Updated</string>
     <string name="DBError">DB Error</string>
