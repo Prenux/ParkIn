@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         new ReverseGeocodingTask(mGeoHandler, mMap).execute(pressedMarker);
         pressedMarker.showInfoWindow();
         if (pressedMarker.isInfoWindowShown()) {
-            Log.d("DEBUG", "info windown is shown");
+            Log.d("MainActivityDEBUG", "info windown is shown");
         }
         return true;
     }
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
             hideRecenterButton();
             mMap.removeLocationMarker();
         }
-        Log.d("DEBUG", "gpsButtonClicked called");
+        Log.d("MainActivityDEBUG", "gpsButtonClicked called");
         mGeoHandler.getPosition();
     }
 

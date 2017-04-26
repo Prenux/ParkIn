@@ -159,8 +159,8 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
         );
 
         db.execSQL("create table " + ParkinFree.NAME + "(" +
-                ParkinFree.Cols.LONGITUDE + ", " +
-                ParkinFree.Cols.LATITUDE + ", " +
+                ParkinFree.Cols.LONGITUDE + " REAL, " +
+                ParkinFree.Cols.LATITUDE + " REAL, " +
                 ParkinFree.Cols.DESCRIPTION + ", " +
                 ParkinFree.Cols.CODE +
                 ")"
@@ -212,7 +212,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
     //Method used to find free parkings that are in distance of the bounding box,
     //which is the region identified by the size of your screen
     public ArrayList<GeoPoint> getFreeParkings(BoundingBox bb) {
-        Log.d("DEBUG", "getting free parkings");
+        Log.d("ParkinDBHelperDebug", "getting free parkings");
         ArrayList<GeoPoint> free_parkings = new ArrayList<>();
         double north = bb.getLatNorth();
         double south = bb.getLatSouth();
@@ -222,14 +222,14 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
             Cursor res = db.rawQuery("SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
                     " AND latitude<=" + north + " AND latitude>=" + south, null); //SELECT all from PARKING where parking allowed (bon code)
             res.moveToFirst();
-            Log.d("DEBUG", "SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
+            Log.d("ParkinDBHelperDebug", "SELECT * FROM PARKINFREE WHERE longitude<=" + east + " AND longitude>=" + west +
                     " AND latitude<=" + north + " AND latitude>=" + south);
-            Log.d("DEBUG", "Before WHILE");
+            Log.d("ParkinDBHelperDebug", "Before WHILE");
             //Ajoute les parkings trouves a ArrayList
             while (!res.isAfterLast()) {
-                Log.d("DEBUG", "Beffore");
+                Log.d("ParkinDBHelperDebug", "Beffore");
                 if (validateTime(res.getString(res.getColumnIndex(ParkinFree.Cols.DESCRIPTION))))
-                    Log.d("DEBUG", "IN IF");
+                    Log.d("ParkinDBHelperDebug", "IN IF");
                     free_parkings.add(new GeoPoint(res.getDouble(res.getColumnIndex(ParkinFree.Cols.LATITUDE)),
                             res.getDouble(res.getColumnIndex(ParkinFree.Cols.LONGITUDE))));
                 res.moveToNext();
@@ -240,7 +240,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Log.d("DEBUG", "Size : " + free_parkings.size());
+        Log.d("ParkinDBHelperDebug", "Size : " + free_parkings.size());
         return free_parkings;
     }
 
@@ -251,7 +251,7 @@ public class ParkinDbHelper extends SQLiteOpenHelper {
         rule = rule.toLowerCase().replace(".", "").replace("-", " ");
         rule = Normalizer.normalize(rule, Normalizer.Form.NFD);
         rule = rule.replaceAll("[^\\p{ASCII}]", "");
-        
+
         //Check deny terms
         for (String str : DENYTERMS) if (rule.contains(str)) return false;
 

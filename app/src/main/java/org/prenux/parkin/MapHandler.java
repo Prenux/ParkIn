@@ -171,7 +171,7 @@ class MapHandler extends MapView {
                 overlays.remove(0);
             }
         } catch (Exception e) {
-            Log.d("DEBUG", e.toString());
+            Log.d("MapHandlerDebug", e.toString());
 
             Toast.makeText(mMainActivity, "Error in removing all POIs", Toast.LENGTH_LONG).show();
         }
@@ -185,7 +185,7 @@ class MapHandler extends MapView {
                 overlays.remove(0);
             }
         } catch (Exception e) {
-            Log.d("DEBUG", e.toString());
+            Log.d("MapHandlerDebug", e.toString());
 
             Toast.makeText(mMainActivity, "Error in removing all Street Reg.", Toast.LENGTH_LONG).show();
         }
