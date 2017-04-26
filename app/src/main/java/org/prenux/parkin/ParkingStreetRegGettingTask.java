@@ -8,8 +8,8 @@ import android.util.Log;
 import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 import org.prenux.parkin.database.ParkinDbHelper;
 
 import java.util.ArrayList;
@@ -40,11 +40,13 @@ public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, ArrayLi
         Drawable freeParkinIcon = mMainActivity.getResources().getDrawable(R.drawable.marker_parking_green); //green markers for free parkings
         try {
             for (GeoPoint gp : geopoints) {
-                Marker StreetRegMarker = new Marker(mMapHandler);
-                StreetRegMarker.setTitle(mMainActivity.getString(R.string.free_parkings));
-                StreetRegMarker.setPosition(gp);
-                StreetRegMarker.setIcon(freeParkinIcon);
-                mfreeParkinMarkers.add(StreetRegMarker);
+                Marker streetRegMarker = new Marker(mMapHandler);
+                streetRegMarker.setTitle(mMainActivity.getString(R.string.free_parkings));
+                streetRegMarker.setPosition(gp);
+                streetRegMarker.setIcon(freeParkinIcon);
+                mfreeParkinMarkers.add(streetRegMarker);
+                streetRegMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bubble_marker, mMapHandler));
+                streetRegMarker.showInfoWindow();
             }
         } catch (Exception e) {
             Log.d("FreeParkingAsync", e.toString());

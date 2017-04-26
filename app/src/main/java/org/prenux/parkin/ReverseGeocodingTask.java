@@ -22,7 +22,7 @@ class ReverseGeocodingTask extends AsyncTask<Object, Void, String> {
     }
 
     protected void onPostExecute(String result) {
-        marker.setSnippet(result);
+        marker.setSnippet("Miaw");
         mMapHandler.invalidate();
     }
 }

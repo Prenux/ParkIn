@@ -20,7 +20,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -92,24 +91,20 @@ class MapHandler extends MapView {
         //Points of interests (Offstreet parking)
         mParkingPoiProvider = new NominatimPOIProvider(mUserAgent);
         mPoiMarkers = new RadiusMarkerClusterer(getContext());
-        Drawable clusterIconD = getResources().getDrawable(R.drawable.marker_parking);
+        Drawable clusterIconD = getResources().getDrawable(R.drawable.marker_cluster);
         Bitmap clusterIcon = ((BitmapDrawable)clusterIconD).getBitmap();
         mPoiMarkers.setIcon(clusterIcon);
         mPoiMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
-        mPoiMarkers.mTextAnchorU = 0.70f;
-        mPoiMarkers.mTextAnchorV = 0.20f;
         mPoiMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
         mPoiMarkers.getTextPaint().setColor(Color.RED);
         this.getOverlays().add(mPoiMarkers);
 
         //Free street Parkin
         mFreeParkinMarkers = new RadiusMarkerClusterer(getContext());
-        Drawable freeClusterIconD = getResources().getDrawable(R.drawable.marker_parking_green);
+        Drawable freeClusterIconD = getResources().getDrawable(R.drawable.marker_cluster);
         Bitmap freeClusterIcon = ((BitmapDrawable)freeClusterIconD).getBitmap();
         mFreeParkinMarkers.setIcon(freeClusterIcon);
         mFreeParkinMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
-        mFreeParkinMarkers.mTextAnchorU = 0.70f;
-        mFreeParkinMarkers.mTextAnchorV = 0.20f;
         mFreeParkinMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
         mFreeParkinMarkers.getTextPaint().setColor(Color.RED);
         this.getOverlays().add(mFreeParkinMarkers);
