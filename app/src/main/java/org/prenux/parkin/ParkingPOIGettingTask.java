@@ -58,6 +58,7 @@ class ParkingPOIGettingTask extends AsyncTask<Object, Void, ArrayList<POI>> {
         } catch (Exception e) {
             Log.d("ParkingPOIGettingTask", e.toString());
         }
+        Log.d("ParkingPOIGettingTask", "Refreshing Map");
         mMapHandler.invalidate();
     }
 }

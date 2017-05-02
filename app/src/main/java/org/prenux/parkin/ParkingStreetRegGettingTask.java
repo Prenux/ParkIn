@@ -51,6 +51,7 @@ public class ParkingStreetRegGettingTask extends AsyncTask<Object, Void, ArrayLi
         } catch (Exception e) {
             Log.d("FreeParkingAsync", e.toString());
         }
+        Log.d("FreeParkingAsync", "Refreshing Map");
         mMapHandler.invalidate();
     }
 }
