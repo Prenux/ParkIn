@@ -1,15 +1,21 @@
 package org.prenux.parkin;
 
+import android.content.Context;
 import android.content.SearchRecentSuggestionsProvider;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.Color;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import org.osmdroid.util.BoundingBox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,70 +23,88 @@ import java.util.Set;
  * Created by sugar on 4/8/17.
  */
 
-public class SearchHandler extends SearchRecentSuggestionsProvider {
+public class SearchHandler {
 
-    int MAX_HISTORY_RESULTS = 10;
-    int mIndex = 0;
-
+    ListView mListView;
     SearchView mSearchView;
+    ArrayAdapter<String> adapter;
+
     MainActivity mMainActivity;
     MapHandler mMap;
     String mUserAgent;
-    public String[] mSearchHistory = new String[MAX_HISTORY_RESULTS];
+    public ArrayList<String> mSearchHistory;
+    public HashSet<String> mHashSetHistory;
     private SuggestionsDatabase database;
 
 
-    public SearchHandler(SearchView sv, MainActivity ma, MapHandler map, String ua, HashSet<String> set) {
+    public SearchHandler(ListView lv, SearchView sv, MainActivity ma, MapHandler map, String ua, HashSet<String> set) {
+        mListView = lv;
         mSearchView = sv;
         mMainActivity = ma;
         mMap = map;
         mUserAgent = ua;
+        mHashSetHistory = set;
 
-        //Retrieve saved searches
-        int i = 0;
-        for (String s : set) {
-            if (s != null && s.length() > 0)
-                mSearchHistory[i++ % MAX_HISTORY_RESULTS] = s;
-        }
-    }
+        loadHistory(set);
+
+  }
 
     public void init() {
+        adapter = new ArrayAdapter<String>(mMainActivity,android.R.layout.simple_list_item_1,mSearchHistory);
 
-        mSearchView.setOnSearchClickListener( new SearchView.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mSearchView.setFocusable(true);
-                mSearchView.requestFocusFromTouch();
+        mListView.setVisibility(View.GONE);
+        mListView.setAdapter(adapter);
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> adapter, View view, int position, long id) {
+                String address = (String) adapter.getItemAtPosition(position);
+                mSearchView.setQuery(address,true);
+                mListView.setVisibility(View.GONE);
             }
-
         });
 
 
-        /*mSearchView.onFocusChangeListener(
 
-        )
-        */
+
+        mSearchView.setOnQueryTextFocusChangeListener( new View.OnFocusChangeListener(){
+            public void onFocusChange(View v, boolean hasFocus) {
+                if( v != null && hasFocus) {
+                    mListView.setVisibility(View.VISIBLE);
+                }
+                else{
+                    mListView.setVisibility(View.GONE);
+                }
+            }
+        }
+        );
+
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                mListView.setVisibility(View.GONE);
+                mListView.clearFocus();
+                mSearchView.clearFocus();
+
                 long result = database.insertSuggestion(query);
-                mSearchHistory[mIndex++ % MAX_HISTORY_RESULTS] = query; // add new queries in search history
+
+                addToHistory(query);
 
                 if (query.length() != 0) {
                     BoundingBox viewbox = mMap.getBoundingBox();
                     new GeocodingTask(mUserAgent, mMainActivity, mMap).execute(query, viewbox);
-                    return result != -1;
                 }
                 return result != -1;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                adapter.getFilter().filter(newText);
                 return false;
             }
         });
 
         database = new SuggestionsDatabase(mMainActivity);
+
         mSearchView.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
             @Override
             public boolean onSuggestionSelect(int position) {
@@ -101,11 +125,20 @@ public class SearchHandler extends SearchRecentSuggestionsProvider {
     }
 
     public HashSet<String> getSearchHistory() {
-        HashSet<String> set = new HashSet<>();
-        for (String s : mSearchHistory) {
-            if (s != null && s.length() > 0)
-                set.add(s);
-        }
-        return set;
+        return mHashSetHistory;
     }
+
+    public void loadHistory(HashSet<String> history){
+        mSearchHistory = new ArrayList<String>(mHashSetHistory);
+    }
+
+    public void addToHistory( String newText){
+        if( !(mHashSetHistory.contains(newText.toLowerCase())) ){
+                mSearchHistory.add(newText.toLowerCase());
+                mHashSetHistory.add(newText.toLowerCase());
+                adapter.add(newText.toLowerCase());
+                adapter.notifyDataSetChanged();
+        }
+    }
+
 }

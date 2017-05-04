@@ -39,6 +39,7 @@ import org.prenux.parkin.database.ParkinDbHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
@@ -47,7 +48,9 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public float INIT_LATITUDE = (float) 45.500997;
     public float INIT_LONGITUDE = (float) -73.615783;
 
-    public SearchHandler mSearch;
+    public ListView mListView;
+    public SearchView mSearchView;
+    public SearchHandler mSearchHandler;
     public String mUserAgent = "org.prenux.parkin";
     public MapHandler mMap;
     LocationManager mLocationManager;
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
     public MainActivity mMainActivity;
     NotificationManager mNotificationManager;
 
-    public ListView mListView;
+
     Context ctx;
     public ListView mLV;
     private SuggestionsDatabase database;
@@ -123,18 +126,21 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         });
 
         //Notifications things
+
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         //Initialize SearchHandler
-        mSearch = new SearchHandler((SearchView) findViewById(R.id.searchbar),
-                mMainActivity, mMap, mUserAgent, (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>()));
         mListView = (ListView) findViewById(R.id.searchListView);
-        mSearch.init();
+        mSearchView = (SearchView) findViewById(R.id.searchbar);
+        mSearchHandler = new SearchHandler( mListView,mSearchView,
+                                            mMainActivity,
+                                            mMap,
+                                            mUserAgent,
+                                            (HashSet<String>) sharedPref.getStringSet("search", new HashSet<String>())
+                                          );
 
+        mSearchHandler.init();
 
-        ArrayAdapter<String> lsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mSearch.mSearchHistory);
-        mListView.setAdapter(lsAdapter);
-        mListView.setVisibility(View.GONE);
 
         Button recenter = (Button) findViewById(R.id.recenter_button);
         recenter.setVisibility(View.GONE);
@@ -157,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements MapEventsReceiver
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putFloat("latitude", (float) mSavedPosition.getLatitude());
         editor.putFloat("longitude", (float) mSavedPosition.getLongitude());
-        editor.putStringSet("search", mSearch.getSearchHistory()); //save search history on app close/pause
+        editor.putStringSet("search", mSearchHandler.getSearchHistory()); //save search history on app close/pause
         editor.commit();
     }
 
