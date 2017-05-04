@@ -43,7 +43,12 @@
         <ListView
             android:id="@+id/searchListView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/darker_gray"
+            android:layout_below="@+id/searchbar"
+            android:layout_toEndOf="@+id/drawer_button" />
+
 
         <org.prenux.parkin.HgSquareFloatButton
             android:id="@+id/drawer_button"
@@ -59,6 +64,7 @@
             android:clickable="true"
             android:onClick="toggleDrawer"
             app:srcCompat="@drawable/ic_drawer" />
+
 
 
         <android.support.design.widget.FloatingActionButton
